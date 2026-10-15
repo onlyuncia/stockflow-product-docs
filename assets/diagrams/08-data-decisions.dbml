@@ -1,0 +1,156 @@
+// Основной полный исходник: 00-master-erd.dbml. Этот файл — подробное представление.
+// Нормализованная реляционная модель StockFlow для PostgreSQL.
+// Заголовки и позиции хранятся отдельно; API собирает их в объект с lines.
+// Это два представления одной базы, а не две независимые базы данных.
+
+Project StockFlowDecisions {
+  database_type: 'PostgreSQL'
+  Note: '''
+    Предложение, решение и планы StockFlow.
+    Перед каждым утверждением менеджер заново подтверждает доступный остаток.
+    Предложение сохраняется отдельно от правок и итогового решения.
+    Только утверждённое решение создаёт планы; отказ сохраняется без планов.
+  '''
+}
+
+Table Product {
+  productId text [pk, not null]
+  internalSku text [not null]
+
+  Note: 'Внутренний товар. Принадлежность селлеру раскрыта в модели источников и расчёта.'
+}
+
+Table Listing {
+  listingId text [pk, not null]
+  productId text [null, note: 'Отсутствует до сопоставления.']
+
+  Note: 'Товар площадки. Кабинет и идентификатор площадки раскрыты в модели источников и расчёта.'
+}
+
+Table Recommendation {
+  recommendationId text [pk, not null]
+  productId text [not null]
+
+  Note: 'Общие данные рекомендации по одному внутреннему товару. Потребность площадок хранится в RecommendationLine; в API возвращается вложенным списком lines.'
+}
+
+Table OwnStockSnapshot {
+  ownStockSnapshotId text [pk, not null]
+  productId text [not null]
+  availableUnits integer [not null, check: `"availableUnits" >= 0`, note: 'Подтверждённый доступный остаток; количество неотрицательное.']
+  sourceKind text [not null, note: 'Учётная система или таблица селлера.']
+  sourceLabel text [not null, note: 'Описание источника собственного остатка.']
+  sourceObservedAt timestamptz [not null]
+  confirmedAt timestamptz [not null]
+  confirmedBy text [not null, note: 'Идентификатор подтвердившего менеджера.']
+
+  Note: '''
+    Снимок своего склада. Фиксированного срока действия нет.
+    Может использоваться в нескольких неутверждённых предложениях.
+    Снимок, использованный в утверждённом решении, нельзя использовать для следующего утверждения.
+  '''
+}
+
+Table AllocationProposal {
+  allocationProposalId text [pk, not null]
+  recommendationId text [not null]
+  ownStockSnapshotId text [not null]
+  allocationMethod text [not null, note: 'Версия метода пропорционального распределения.']
+  proposedPurchaseUnits integer [not null, check: `"proposedPurchaseUnits" >= 0`]
+
+  Note: 'Общие данные предложения. Позиции хранятся в AllocationLine; в API предложение содержит список lines. Исходное распределение сохраняется до правок менеджера.'
+}
+
+Table AllocationLine {
+  allocationProposalId text [not null]
+  listingId text [not null]
+  proposedShipmentUnits integer [not null, check: `"proposedShipmentUnits" >= 0`]
+
+  indexes {
+    (allocationProposalId, listingId) [pk]
+  }
+
+  Note: 'Позиция распределения. Ключ — предложение и товар площадки. Одному предложению принадлежат несколько позиций; отдельного глобального идентификатора позиции не требуется.'
+}
+
+Table ManagerDecision {
+  decisionId text [pk, not null]
+  recommendationId text [not null, unique, note: 'Одна рекомендация получает не более одного итогового решения.']
+  allocationProposalId text [null, unique, note: 'Обязательно при утверждении; может отсутствовать при раннем отказе.']
+  ownStockSnapshotId text [null, note: 'Обязательно при утверждении; совпадает со снимком рассмотренного предложения.']
+  status text [not null, note: 'approved или rejected.']
+  decidedBy text [not null, note: 'Идентификатор менеджера, принявшего решение.']
+  decidedAt timestamptz [not null]
+  reason text [null, note: 'Причина изменения либо отказа; при отказе обязательна.']
+
+  checks {
+    `"status" IN ('approved', 'rejected')`
+    `"status" <> 'approved' OR ("allocationProposalId" IS NOT NULL AND "ownStockSnapshotId" IS NOT NULL)`
+    `"status" <> 'rejected' OR ("reason" IS NOT NULL AND length(btrim("reason")) > 0)`
+  }
+
+  Note: '''
+    Решение менеджера. При утверждении фиксирует исходные версии и создаёт планы.
+    При отказе планов нет; ссылки на предложение и свой остаток могут отсутствовать.
+    Только для approved действует правило одного утверждения на снимок собственного остатка.
+    Оно обеспечивается частичным уникальным индексом PostgreSQL, описанным в документе модели данных.
+    Все связанные объекты относятся к одному селлеру и внутреннему товару.
+  '''
+}
+
+Table ShipmentPlan {
+  shipmentPlanId text [pk, not null]
+  decisionId text [not null, unique]
+  createdAt timestamptz [not null]
+
+  Note: 'Заголовок плана отгрузки. Создаётся на основании утверждённого решения, если есть положительные количества. В API объединяется с ShipmentPlanLine в объект с lines.'
+}
+
+Table ShipmentPlanLine {
+  shipmentPlanId text [not null]
+  listingId text [not null]
+  approvedShipmentUnits integer [not null, check: `"approvedShipmentUnits" > 0`]
+
+  indexes {
+    (shipmentPlanId, listingId) [pk]
+  }
+
+  Note: 'Позиция плана отгрузки. Ключ — план и товар площадки. Сумму отгрузок и доступный остаток проверяет сервер в транзакции утверждения.'
+}
+
+Table PurchasePlan {
+  purchasePlanId text [pk, not null]
+  decisionId text [not null, unique]
+  createdAt timestamptz [not null]
+
+  Note: 'Заголовок плана закупки. Создаётся на основании утверждённого решения при положительном объёме закупки. В текущем сценарии относится к одному внутреннему товару.'
+}
+
+Table PurchasePlanLine {
+  purchasePlanId text [not null]
+  productId text [not null]
+  approvedPurchaseUnits integer [not null, check: `"approvedPurchaseUnits" > 0`]
+
+  indexes {
+    (purchasePlanId, productId) [pk]
+  }
+
+  Note: 'Позиция плана закупки. Ключ — план и внутренний товар. В API возвращается внутри PurchasePlan.lines; закупка не увеличивает запас текущей отгрузки.'
+}
+
+Ref: Listing.productId >? Product.productId
+Ref: Recommendation.productId > Product.productId
+Ref: OwnStockSnapshot.productId > Product.productId
+Ref: AllocationProposal.recommendationId > Recommendation.recommendationId
+Ref: AllocationProposal.ownStockSnapshotId > OwnStockSnapshot.ownStockSnapshotId
+Ref: Recommendation.recommendationId - ManagerDecision.recommendationId
+Ref: AllocationProposal.allocationProposalId ?- ManagerDecision.allocationProposalId
+Ref: ManagerDecision.ownStockSnapshotId >? OwnStockSnapshot.ownStockSnapshotId
+Ref: ManagerDecision.decisionId - ShipmentPlan.decisionId
+Ref: ManagerDecision.decisionId - PurchasePlan.decisionId
+Ref: AllocationLine.allocationProposalId > AllocationProposal.allocationProposalId
+Ref: AllocationLine.listingId > Listing.listingId
+Ref: ShipmentPlanLine.shipmentPlanId > ShipmentPlan.shipmentPlanId
+Ref: ShipmentPlanLine.listingId > Listing.listingId
+Ref: PurchasePlanLine.purchasePlanId > PurchasePlan.purchasePlanId
+Ref: PurchasePlanLine.productId > Product.productId

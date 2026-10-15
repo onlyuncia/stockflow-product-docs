@@ -1,0 +1,34 @@
+@startuml
+!include <C4/C4_Container>
+LAYOUT_TOP_DOWN()
+UpdateLegendTitle("Легенда")
+UpdateElementStyle("person", $legendText="Пользователь")
+UpdateElementStyle("container", $legendText="Контейнер StockFlow")
+UpdateElementStyle("external_system", $legendText="Внешняя система")
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 15
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam dpi 140
+
+title C4 · уровень 2 · Контейнеры StockFlow
+
+Person(manager, "Менеджер селлера", "Работает с рекомендациями и подтверждает количества.")
+System_Boundary(stockflow, "StockFlow") {
+ Container(web, "Веб-приложение", "Браузер", "Показывает расчёт, позволяет подтвердить свой остаток и принять решение.")
+ Container(backend, "Серверное приложение", "HTTP/JSON · фоновая обработка", "Синхронизирует площадки, рассчитывает потребность и распределение, проверяет и сохраняет решения.")
+ ContainerDb(db, "База данных", "PostgreSQL", "Хранит входные снимки, сопоставления, версии правил, рекомендации, решения и планы.")
+}
+System_Ext(ozon, "Ozon", "Источник продаж и остатков кабинетов.")
+System_Ext(wb, "Wildberries", "Источник продаж и остатков кабинетов.")
+
+Rel_D(manager, web, "Просматривает расчёт и передаёт решение")
+Rel_D(web, backend, "Получает данные и отправляет команды", "HTTP/JSON")
+Rel_R(backend, db, "Читает и сохраняет предметные данные и версии", "SQL")
+Rel_D(backend, ozon, "Автоматически запрашивает продажи и остатки", "API")
+Rel_D(backend, wb, "Автоматически запрашивает продажи и остатки", "API")
+Lay_R(ozon, wb)
+
+SHOW_LEGEND($hideStereotype="false")
+@enduml
+

@@ -1,0 +1,125 @@
+<!doctype html><html lang="ru" class="dark" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Результаты и наблюдения — документы и схемы StockFlow."><link rel="icon" href="../assets/favicon.svg?v=2"><meta name="theme-color" content="#080b12"><title>Результаты и наблюдения · StockFlow</title><script src="../theme.js?v=1"></script><link rel="stylesheet" href="../assets/vendor/heroui/heroui.min.css"><link rel="stylesheet" href="../styles.css?v=8"><link rel="stylesheet" href="../theme.css?v=2"><script src="../documents.js?v=2" defer></script></head><body><a class="skip" href="#main">К содержанию</a><header class="site-header"><div class="wrap header-row"><a class="brand" href="../index.html"><svg class="logo" viewBox="0 0 40 40" aria-hidden="true" focusable="false"><rect x="1" y="1" width="38" height="38" rx="8" fill="var(--raised)" stroke="currentColor" stroke-width="1.2"/><path d="M10 10H30V14H10ZM10 18H22V22H10ZM10 26H26V30H10Z" fill="currentColor"/></svg>StockFlow<span class="brand-sub">/ кейс</span></a><nav aria-label="Основная навигация"><a href="../index.html#context">Контекст</a><a href="../documents.html">Документы</a><a href="../diagrams.html">Схемы</a></nav><div class="header-actions"><button type="button" class="theme-toggle button button--secondary button--sm" data-theme-toggle aria-label="Включить светлую тему"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/></svg><span>Светлая</span></button><a class="button small outline button--secondary button--sm" href="../index.html#prototype">К прототипу ↗</a></div></div></header><main id="main"><section class="page-hero"><div class="wrap"><a class="back-link" href="../documents.html">← Все документы</a><p class="kicker">Документация StockFlow / 14</p><h1>Результаты и наблюдения</h1><p class="lead">Изменения процесса и границы численных заявлений.</p><div class="document-tools"><a href="../source/docs/14-RESULTS.md" download>Скачать исходник ↓</a><a href="../index.html#prototype">Проверить сценарий в прототипе ↗</a></div></div></section><div class="wrap document-layout"><aside class="document-nav" aria-label="Документы кейса"><a class="" href="01-process-as-is-to-be.html" >Процесс до и после</a><a class="" href="02-calculation-rules.html" >Правила расчёта</a><a class="" href="03-functional-requirements.html" >Функциональные требования</a><a class="" href="04-use-case.html" >Сквозной сценарий</a><a class="" href="05-acceptance-criteria.html" >Критерии приёмки</a><a class="" href="06-architecture.html" >Архитектура C4</a><a class="" href="07-data-model.html" >Модель PostgreSQL</a><a class="" href="08-api-contract.html" >Контракт взаимодействия</a><a class="" href="09-openapi.html" >OpenAPI 3.1</a><a class="" href="10-diagrams.html" >Каталог диаграмм</a><a class="" href="11-stakeholders.html" >Участники процесса</a><a class="" href="12-constraints-dependencies.html" >Ограничения и зависимости</a><a class="" href="13-risks-mitigation.html" >Риски и меры снижения</a><a class="active" href="14-results.html" aria-current="page">Результаты и наблюдения</a><a class="" href="15-project-success.html" >Критерии успеха</a><a class="" href="16-expansion-plans.html" >Направления расширения</a><a class="" href="17-non-functional-requirements.html" >Нефункциональные требования</a><a class="" href="18-backend-logic.html" >Backend-логика</a><a class="" href="case-stockflow.html" >Единый кейс</a></aside><article class="document-body"><span id="результаты-stockflow" class="document-title-anchor"></span>
+<h2 id="что-изменилось-в-процессе">Что изменилось в процессе</h2>
+<div class="doc-table-scroll"><table>
+<thead>
+<tr>
+<th>До StockFlow</th>
+<th>Изменение</th>
+<th>Проверяемый результат</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Продажи и остатки площадок собирали из кабинетов и выгрузок в рабочую книгу.</td>
+<td>Автоматическое получение данных площадок и отдельное состояние каждого источника.</td>
+<td>Менеджер видит происхождение данных и причину отсутствия расчёта; ошибка не превращается в ноль.</td>
+</tr>
+<tr>
+<td>Большое условное число в книге не отражало реальный доступный запас.</td>
+<td>Новое подтверждение остатка своего склада перед каждым утверждением.</td>
+<td>План связан с подтверждённым остатком; текущая отгрузка не превышает его.</td>
+</tr>
+<tr>
+<td>Потребность площадок и корректировка менеджера могли восприниматься как один итог.</td>
+<td>Раздельные рекомендация, предложение распределения и решение.</td>
+<td>Можно восстановить исходное распределение и объяснить, какие количества изменил менеджер.</td>
+</tr>
+<tr>
+<td>Отгрузка и дополнительная закупка согласовывались в общем ручном процессе.</td>
+<td>Два отдельных плана по утверждённым количествам.</td>
+<td>Недостающий товар не выдается за уже доступный к отправке; отказ сохраняется без планов.</td>
+</tr>
+</tbody></table></div>
+<h2 id="масштаб">Масштаб</h2>
+<p>В клиентском портфеле было <strong>23 селлера и 72 кабинета маркетплейсов</strong>. Я посчитал кабинеты по рабочему перечню; названия клиентов здесь не привожу.</p>
+<div class="doc-table-scroll"><table>
+<thead>
+<tr>
+<th>Площадка</th>
+<th align="right">Кабинетов</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Ozon</td>
+<td align="right">27</td>
+</tr>
+<tr>
+<td>Wildberries</td>
+<td align="right">23</td>
+</tr>
+<tr>
+<td>Яндекс Маркет</td>
+<td align="right">14</td>
+</tr>
+<tr>
+<td>Мегамаркет</td>
+<td align="right">6</td>
+</tr>
+<tr>
+<td>Lamoda</td>
+<td align="right">2</td>
+</tr>
+<tr>
+<td><strong>Всего</strong></td>
+<td align="right"><strong>72</strong></td>
+</tr>
+</tbody></table></div>
+<p>В кейсе я подробно разобрал WB и Ozon — <strong>50 кабинетов</strong>. Описание API ограничено этими площадками.</p>
+<h2 id="время-подсорта">Время подсорта</h2>
+<p>По моему опыту, обычный цикл для селлера с 1–2 кабинетами занимал <strong>60–120 минут вручную</strong> и <strong>до 30 минут в StockFlow</strong>.</p>
+<div class="doc-table-scroll"><table>
+<thead>
+<tr>
+<th>Показатель</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Ручной подсорт до StockFlow</td>
+<td>60–120 минут</td>
+</tr>
+<tr>
+<td>Обычный цикл в StockFlow</td>
+<td>До 30 минут активной работы менеджера</td>
+</tr>
+<tr>
+<td>Расчётное сокращение</td>
+<td>50–75% при сравнении с циклом в 30 минут</td>
+</tr>
+</tbody></table></div>
+<p>Расчёт сокращения: <code>(60 − 30) / 60 = 50%</code> и <code>(120 − 30) / 120 = 75%</code>. Это сравнение оценок времени, а не среднее по всем селлерам.</p>
+<h3 id="что-входило-в-цикл">Что входило в цикл</h3>
+<div class="doc-table-scroll"><table>
+<thead>
+<tr>
+<th>Действие</th>
+<th align="right">Пример распределения времени</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Проверка рекомендаций и проблемных данных</td>
+<td align="right">До 5 минут</td>
+</tr>
+<tr>
+<td>Сверка и подтверждение доступного остатка</td>
+<td align="right">До 10 минут</td>
+</tr>
+<tr>
+<td>Корректировка распределения и закупки</td>
+<td align="right">До 10 минут</td>
+</tr>
+<tr>
+<td>Проверка и утверждение планов</td>
+<td align="right">До 5 минут</td>
+</tr>
+<tr>
+<td><strong>Всего</strong></td>
+<td align="right"><strong>До 30 минут</strong></td>
+</tr>
+</tbody></table></div>
+<p>Общую длительность я оцениваю по рабочему опыту. Разбивка этапов иллюстрирует состав работы.</p>
+<p>Я учитывал активную работу при готовых данных, доступном учёте своего склада и ограниченном числе корректировок. Ожидание API, ответа селлера и дополнительного согласования — отдельно. Большой ассортимент и сложные случаи могут занять больше времени; фактическая закупка и отгрузка находятся за границами этого цикла.</p>
+<p>Период наблюдения, число товаров и журнал инструментальных замеров не зафиксированы. Рост продаж, снижение дефицита и финансовый эффект в деньгах я не оценивал.</p>
+<h2 id="дальнейшая-оценка">Дальнейшая оценка</h2>
+<p>Для сравнения циклов нужно фиксировать число кабинетов и товаров, количество ручных корректировок, активное время и ожидания. Обычные циклы и случаи с проблемами данных стоит оценивать отдельно.</p>
+<p>Условия качества решения собраны в <a href="15-project-success.html">критериях успеха</a>. Примеры прототипа используют вымышленные данные; статус материалов описан в <a href="case-stockflow.html#12-%D1%81%D1%82%D0%B0%D1%82%D1%83%D1%81-%D1%81%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B9-%D0%B8-%D0%BC%D0%B0%D1%82%D0%B5%D1%80%D0%B8%D0%B0%D0%BB%D1%8B-%D0%BA%D0%B5%D0%B9%D1%81%D0%B0">едином кейсе</a>.</p>
+</article></div></main><footer class="site-footer"><div class="wrap"><a class="brand" href="../index.html">StockFlow<span class="brand-sub">/ BA · SA</span></a><p>Мой кейс БА/СА. Прототип работает на вымышленных данных.</p><a href="../index.html#prototype">Попробовать сценарий ↗</a></div></footer><dialog class="image-dialog" id="image-dialog" aria-labelledby="image-title"><div class="dialog-head"><div><h2 id="image-title">Диаграмма</h2><div class="diagram-links"><a id="image-original" target="_blank" rel="noopener">Открыть полный размер ↗</a></div></div><button class="dialog-close" type="button" id="image-close" aria-label="Закрыть">×</button></div><div class="image-toolbar" role="group" aria-label="Масштаб диаграммы"><button type="button" id="image-zoom-out" aria-label="Уменьшить">−</button><output id="image-scale" aria-live="polite">100%</output><button type="button" id="image-zoom-in" aria-label="Увеличить">+</button><button type="button" id="image-fit">Вместить</button><button type="button" id="image-actual">100%</button></div><p class="image-help" id="image-help">Увеличьте схему и перемещайте её мышью или прокруткой. Клавиши + / − меняют масштаб.</p><div class="image-viewport" id="image-viewport" tabindex="0" role="region" aria-label="Область просмотра диаграммы" aria-describedby="image-help"><div class="image-canvas" id="image-canvas"><img id="image-full" alt="" draggable="false"></div></div></dialog></body></html>

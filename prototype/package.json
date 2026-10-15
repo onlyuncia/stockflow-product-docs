@@ -1,0 +1,13 @@
+{
+  "name": "stockflow-case-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:docs": "node build-docs.mjs",
+    "build:pdf": "python build-case-pdf.py",
+    "build": "npm run build:pdf && npm run build:docs && npm run check",
+    "check": "node validate-site.mjs",
+    "test": "node --test --test-isolation=none tests/engine.test.cjs"
+  },
+  "devDependencies": { "marked": "17.0.5" }
+}

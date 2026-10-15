@@ -1,0 +1,120 @@
+@startuml
+skinparam backgroundColor white
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam ArrowColor #45566F
+skinparam LineColor #45566F
+skinparam NoteBackgroundColor #FFF5DB
+skinparam NoteBorderColor #C5A659
+skinparam dpi 150
+left to right direction
+hide circle
+title StockFlow · источники и расчёт\nРеляционная модель PostgreSQL
+entity "Селлер\nSeller" as Seller {
+* sellerId : text
+--
+}
+entity "Кабинет площадки\nMarketplaceAccount" as MarketplaceAccount {
+* accountId : text
+--
+sellerId : text
+marketplace : text
+externalAccountId : text
+}
+entity "Внутренний товар\nProduct" as Product {
+* productId : text
+--
+sellerId : text
+internalSku : text
+}
+entity "Товар площадки\nListing" as Listing {
+* listingId : text
+--
+accountId : text
+productId : text · NULL
+externalListingId : text
+}
+entity "Обновление\nSyncRun" as SyncRun {
+* syncRunId : text
+--
+accountId : text
+dataType : text
+startedAt : timestamptz
+completedAt : timestamptz · NULL
+result : text
+errorCode : text · NULL
+errorMessage : text · NULL
+}
+entity "Снимок продаж\nSalesSnapshot" as SalesSnapshot {
+* salesSnapshotId : text
+--
+syncRunId : text
+listingId : text
+periodStart : date
+periodEnd : date
+salesUnits : integer
+}
+entity "Снимок остатка площадки\nMarketplaceStockSnapshot" as MarketplaceStockSnapshot {
+* stockSnapshotId : text
+--
+syncRunId : text
+listingId : text
+marketplaceStockUnits : integer
+observedAt : timestamptz
+}
+entity "Версия правила\nRuleVersion" as RuleVersion {
+* ruleVersionId : text
+--
+sellerId : text
+marketplace : text
+category : text
+version : text
+targetCoverageDays : integer
+roundingPolicy : text
+}
+entity "Рекомендация\nRecommendation" as Recommendation {
+* recommendationId : text
+--
+productId : text
+}
+entity "Позиция рекомендации\nRecommendationLine" as RecommendationLine {
+* recommendationId : text
+* listingId : text
+--
+sourceSalesSnapshotId : text · NULL
+sourceStockSnapshotId : text · NULL
+ruleVersionId : text · NULL
+dataState : text
+targetStockUnits : integer · NULL
+recommendedUnits : integer · NULL
+calculationIssue : text · NULL
+}
+Seller "1" -- "0..*" MarketplaceAccount
+Seller "1" -- "0..*" Product
+MarketplaceAccount "1" -- "0..*" Listing
+Product "0..1" -- "0..*" Listing
+MarketplaceAccount "1" -- "0..*" SyncRun
+SyncRun "1" -- "0..*" SalesSnapshot
+Listing "1" -- "0..*" SalesSnapshot
+SyncRun "1" -- "0..*" MarketplaceStockSnapshot
+Listing "1" -- "0..*" MarketplaceStockSnapshot
+Seller "1" -- "0..*" RuleVersion
+Product "1" -- "0..*" Recommendation
+Recommendation "1" -- "0..*" RecommendationLine
+Listing "1" -- "0..*" RecommendationLine
+SalesSnapshot "0..1" -- "0..*" RecommendationLine
+MarketplaceStockSnapshot "0..1" -- "0..*" RecommendationLine
+RuleVersion "0..1" -- "0..*" RecommendationLine
+note bottom of RecommendationLine
+  Позиции принадлежат рекомендации.
+  Ключ: recommendationId + listingId.
+  Отсутствующее значение не равно нулю.
+end note
+legend bottom
+  * — первичный ключ; у позиций ключ составной.
+  NULL — необязательное значение.
+  Позиции хранятся отдельно, но входят в свой бизнес-документ.
+  В API заголовок и позиции возвращаются вместе в объекте с lines.
+endlegend
+@enduml

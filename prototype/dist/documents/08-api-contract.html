@@ -1,0 +1,116 @@
+<!doctype html><html lang="ru" class="dark" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Контракт взаимодействия — документы и схемы StockFlow."><link rel="icon" href="../assets/favicon.svg?v=2"><meta name="theme-color" content="#080b12"><title>Контракт взаимодействия · StockFlow</title><script src="../theme.js?v=1"></script><link rel="stylesheet" href="../assets/vendor/heroui/heroui.min.css"><link rel="stylesheet" href="../styles.css?v=8"><link rel="stylesheet" href="../theme.css?v=2"><script src="../documents.js?v=2" defer></script></head><body><a class="skip" href="#main">К содержанию</a><header class="site-header"><div class="wrap header-row"><a class="brand" href="../index.html"><svg class="logo" viewBox="0 0 40 40" aria-hidden="true" focusable="false"><rect x="1" y="1" width="38" height="38" rx="8" fill="var(--raised)" stroke="currentColor" stroke-width="1.2"/><path d="M10 10H30V14H10ZM10 18H22V22H10ZM10 26H26V30H10Z" fill="currentColor"/></svg>StockFlow<span class="brand-sub">/ кейс</span></a><nav aria-label="Основная навигация"><a href="../index.html#context">Контекст</a><a href="../documents.html">Документы</a><a href="../diagrams.html">Схемы</a></nav><div class="header-actions"><button type="button" class="theme-toggle button button--secondary button--sm" data-theme-toggle aria-label="Включить светлую тему"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/></svg><span>Светлая</span></button><a class="button small outline button--secondary button--sm" href="../index.html#prototype">К прототипу ↗</a></div></div></header><main id="main"><section class="page-hero"><div class="wrap"><a class="back-link" href="../documents.html">← Все документы</a><p class="kicker">Документация StockFlow / 08</p><h1>Контракт взаимодействия</h1><p class="lead">Операции интерфейса и правила сохранения решений.</p><div class="document-tools"><a href="../source/docs/08-API-CONTRACT.md" download>Скачать исходник ↓</a><a href="../index.html#prototype">Проверить сценарий в прототипе ↗</a></div></div></section><div class="wrap document-layout"><aside class="document-nav" aria-label="Документы кейса"><a class="" href="01-process-as-is-to-be.html" >Процесс до и после</a><a class="" href="02-calculation-rules.html" >Правила расчёта</a><a class="" href="03-functional-requirements.html" >Функциональные требования</a><a class="" href="04-use-case.html" >Сквозной сценарий</a><a class="" href="05-acceptance-criteria.html" >Критерии приёмки</a><a class="" href="06-architecture.html" >Архитектура C4</a><a class="" href="07-data-model.html" >Модель PostgreSQL</a><a class="active" href="08-api-contract.html" aria-current="page">Контракт взаимодействия</a><a class="" href="09-openapi.html" >OpenAPI 3.1</a><a class="" href="10-diagrams.html" >Каталог диаграмм</a><a class="" href="11-stakeholders.html" >Участники процесса</a><a class="" href="12-constraints-dependencies.html" >Ограничения и зависимости</a><a class="" href="13-risks-mitigation.html" >Риски и меры снижения</a><a class="" href="14-results.html" >Результаты и наблюдения</a><a class="" href="15-project-success.html" >Критерии успеха</a><a class="" href="16-expansion-plans.html" >Направления расширения</a><a class="" href="17-non-functional-requirements.html" >Нефункциональные требования</a><a class="" href="18-backend-logic.html" >Backend-логика</a><a class="" href="case-stockflow.html" >Единый кейс</a></aside><article class="document-body"><span id="контракт-взаимодействия-интерфейса-и-stockflow" class="document-title-anchor"></span>
+<p>Документ описывает внутренний HTTP-интерфейс подсорта: получение рекомендации, подтверждение своего остатка и сохранение решения. Статус технических моделей указан в <a href="case-stockflow.html#12-%D1%81%D1%82%D0%B0%D1%82%D1%83%D1%81-%D1%81%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B9-%D0%B8-%D0%BC%D0%B0%D1%82%D0%B5%D1%80%D0%B8%D0%B0%D0%BB%D1%8B-%D0%BA%D0%B5%D0%B9%D1%81%D0%B0">едином кейсе</a>.</p>
+<p>Автоматическую синхронизацию с API маркетплейсов запускал сам StockFlow. Менеджер не загружал продажи или остатки площадок через перечисленные ниже операции. Источник собственного склада был отдельным: менеджер передавал подтверждённый остаток из учёта или таблицы селлера.</p>
+<h2 id="операции-основного-сценария">Операции основного сценария</h2>
+<p>Во всех путях <code>{sellerId}</code> задаёт область данных одного селлера. Интерфейс не должен получать или изменять рекомендации другого селлера, даже если артикулы совпадают.</p>
+<div class="doc-table-scroll"><table>
+<thead>
+<tr>
+<th>Операция</th>
+<th>Результат для интерфейса</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>GET /internal/v1/sellers/{sellerId}/marketplace-accounts/{accountId}/sync-state</code></td>
+<td>Состояние последней синхронизации продаж и остатков, источник и время обновления, ошибка либо число несопоставленных товаров. Ошибка API не превращается в нулевой остаток.</td>
+</tr>
+<tr>
+<td><code>GET /internal/v1/sellers/{sellerId}/products/{productId}/recommendations/latest</code></td>
+<td>Последняя рекомендация по товару или явное отсутствие рассчитанной рекомендации. Интерфейс получает её идентификатор для просмотра и принятия решения.</td>
+</tr>
+<tr>
+<td><code>GET /internal/v1/sellers/{sellerId}/products/{productId}/recommendations/{recommendationId}</code></td>
+<td>Рекомендация по одному внутреннему товару: отдельные строки площадок, входные снимки, версия правила, расчёт и причина отсутствия расчёта, если данных недостаточно.</td>
+</tr>
+<tr>
+<td><code>POST /internal/v1/sellers/{sellerId}/products/{productId}/own-stock-snapshots</code></td>
+<td>Новое подтверждение менеджером доступного остатка своего склада с указанием источника. Старые снимки и решения не переписываются.</td>
+</tr>
+<tr>
+<td><code>POST /internal/v1/sellers/{sellerId}/products/{productId}/allocation-proposals</code></td>
+<td>Начальное пропорциональное распределение на основе конкретной рекомендации и снимка своего склада: доступное количество, строки предложенной отгрузки, версия метода и отдельно недостающий объём.</td>
+</tr>
+<tr>
+<td><code>POST /internal/v1/sellers/{sellerId}/products/{productId}/decisions</code></td>
+<td>Утверждение изменённых или исходных количеств либо отклонение рекомендации. Для утверждения требуется новое подтверждение своего остатка; только утверждение создаёт планы отгрузки и закупки с вложенными списками для положительных количеств.</td>
+</tr>
+<tr>
+<td><code>GET /internal/v1/sellers/{sellerId}/products/{productId}/decisions/{decisionId}</code></td>
+<td>Сохранённое решение, его автор, исходная рекомендация, рассмотренное предложение, использованные версии данных и отдельные объекты планов с их строками.</td>
+</tr>
+</tbody></table></div>
+<h2 id="данные-которые-нельзя-смешивать">Данные, которые нельзя смешивать</h2>
+<div class="doc-table-scroll"><table>
+<thead>
+<tr>
+<th>Поле или состояние</th>
+<th>Смысл</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>salesUnits: 0</code> при успешном обновлении</td>
+<td>За выбранное окно продаж действительно не было.</td>
+</tr>
+<tr>
+<td><code>salesUnits: null</code> и <code>dataState: &quot;missing_sales&quot;</code></td>
+<td>Продажи не получены; это не нулевые продажи.</td>
+</tr>
+<tr>
+<td><code>marketplaceStockUnits: null</code> и <code>dataState: &quot;missing_stock&quot;</code></td>
+<td>Остаток площадки не подтверждён. Рассчитанное количество в такой строке отсутствует.</td>
+</tr>
+<tr>
+<td><code>recommendedUnits</code></td>
+<td>Расчётная потребность площадки до ограничения своим складом. Это не план отгрузки.</td>
+</tr>
+<tr>
+<td><code>proposedShipmentUnits</code></td>
+<td>Предложенная часть доступного своего остатка. Менеджер вправе изменить её.</td>
+</tr>
+<tr>
+<td><code>approvedShipmentUnits</code> и <code>approvedPurchaseUnits</code></td>
+<td>Количества в строках утверждённых планов. Закупка не считается товаром, доступным для текущей отгрузки.</td>
+</tr>
+</tbody></table></div>
+<p><code>dataState</code> отражает наличие снимков продаж и остатка. <code>calculationIssue</code> объясняет невозможность расчёта, в том числе отсутствие версии правила при полученных снимках. При нерассчитанной строке <code>recommendedUnits</code> равен <code>null</code>, вся рекомендация имеет статус <code>incomplete</code>, а <code>totalRecommendedUnits</code> равен <code>null</code>. Распределение и утверждение запрещены; отклонение разрешено. При полном расчёте возвращаются <code>targetStockUnits</code> и <code>roundingPolicy</code>, а причина равна <code>null</code>.</p>
+<p>Поле <code>confirmedAt</code> обозначает время нового подтверждения своего остатка в сервисе и совпадает с именем в PostgreSQL; <code>sourceObservedAt</code> — время остатка в учёте селлера. Автор подтверждения и решения определяется сервером.</p>
+<p>Каждая строка рекомендации возвращает ссылки на снимки продаж и остатка площадки и на версию правила. Предложение распределения возвращает ссылку на принятый снимок собственного склада. Решение сохраняет ссылки на эти исходные версии: последующее обновление данных не меняет историю.</p>
+<p>При дефиците предложение использует пропорции рассчитанной потребности площадок. Количества округляются до целых штук методом наибольших дробных остатков; равенство разрешается стабильным порядком идентификаторов товаров площадок. Для примера ниже ответ <code>allocation-proposals</code> содержал бы <code>proposedShipmentUnits</code> <strong>6</strong> для Ozon и <strong>24</strong> для Wildberries, <code>proposedPurchaseUnits</code> <strong>13</strong> и <code>allocationMethod: &quot;proportional_largest_remainder_v1&quot;</code>. Это начальное предложение, а не итог менеджера. Подробное правило описано в <a href="02-calculation-rules.html">правилах расчёта</a>.</p>
+<h2 id="пример-решения-по-uc-01">Пример решения по UC-01</h2>
+<p>В этом синтетическом примере потребность площадок составляет 9 шт. для Ozon и 34 шт. для Wildberries, а доступный остаток своего склада — 30 шт. Менеджер утвердил отгрузку 9 и 21 шт. и закупку 13 шт. Пример показывает <strong>его решение</strong>, а не универсальное правило приоритета площадок.</p>
+<pre><code class="language-json">{
+  &quot;recommendationId&quot;: &quot;rec-demo-01&quot;,
+  &quot;allocationProposalId&quot;: &quot;alloc-demo-01&quot;,
+  &quot;action&quot;: &quot;approve&quot;,
+  &quot;shipmentLines&quot;: [
+    { &quot;listingId&quot;: &quot;ozon-demo&quot;, &quot;units&quot;: 9 },
+    { &quot;listingId&quot;: &quot;wb-demo&quot;, &quot;units&quot;: 21 }
+  ],
+  &quot;purchaseUnits&quot;: 13
+}
+</code></pre>
+<p>При раннем отклонении достаточно <code>recommendationId</code>, <code>action: &quot;reject&quot;</code> и непустой причины. Если менеджер уже рассмотрел предложение, запрос также передаёт <code>allocationProposalId</code>; сервер сохраняет эту ссылку и берёт <code>ownStockSnapshotId</code> из предложения. Тело запроса не содержит утверждённых количеств; планов из отказа не возникает.</p>
+<p>В ответе решение содержит два отдельных объекта: <code>shipmentPlan</code> и <code>purchasePlan</code>. У каждого плана есть собственный идентификатор, <code>decisionId</code>, время создания и массив <code>lines</code>. Элемент <code>shipmentPlan.lines</code> указывает товар площадки и <code>approvedShipmentUnits</code>, элемент <code>purchasePlan.lines</code> — внутренний товар и <code>approvedPurchaseUnits</code>. В PostgreSQL позиции хранятся в дочерних таблицах со ссылкой на план и составным ключом «план + товар». Ответ API уже вложен в план, поэтому не повторяет родительский идентификатор в каждом элементе. Если соответствующий объём равен нулю, план возвращается как <code>null</code>; при отказе оба плана равны <code>null</code>. Для утверждения одной закупки допускается <code>shipmentLines: []</code>; положительные позиции создают план отгрузки, нулевые пропускаются. При обоих нулевых объёмах сохраняется утверждённое решение без планов. Исходное предложение распределения остаётся отдельным объектом истории.</p>
+<p>Сервис сохраняет решение, планы и позиции в одной транзакции PostgreSQL. Ответ <code>201</code> возвращается после успешного завершения транзакции; при ошибке новые планы и решение не остаются частично сохранёнными.</p>
+<h2 id="проверки-перед-утверждением">Проверки перед утверждением</h2>
+<ul>
+<li>Рекомендация, сопоставленные товары, снимок своего склада и предложение распределения принадлежат одному селлеру и одному внутреннему товару.</li>
+<li>Для каждого утверждения менеджер заново подтверждает доступное количество своего склада. Снимок, уже использованный в утверждённом решении, не принимается повторно; фиксированного срока действия снимка нет.</li>
+<li>Все утверждаемые количества целые и неотрицательные; сумма строк текущей отгрузки не превышает доступный остаток в принятом снимке.</li>
+<li>Один <code>listingId</code> не повторяется в <code>shipmentLines</code>; каждый относится к площадке исходной рекомендации. Дубликат отклоняется как <code>422</code>, чужой или недоступный ресурс — как <code>404</code>.</li>
+<li>Строка с недостающими данными или несопоставленным товаром не превращается в утверждённую отгрузку. Причина отказа в утверждении возвращается отдельно от нулевого расчёта.</li>
+<li>Если рекомендация уже получила итоговое решение, повторный запрос не создаёт второй план. Историческое решение остаётся доступным для чтения.</li>
+</ul>
+<p>Ошибку формы запроса интерфейс получает как <code>400</code>, отсутствие доступного ресурса — как <code>404</code>, конфликт с уже принятым решением, повторным использованием подтверждённого остатка или изменившимся состоянием — как <code>409</code>, нарушение ограничений количества или данных — как <code>422</code>. Ответ с ошибкой содержит машинный код (<code>STOCK_LIMIT_EXCEEDED</code>, <code>OWN_STOCK_RECONFIRMATION_REQUIRED</code>, <code>DATA_UNAVAILABLE</code> и подобные) и понятное менеджеру сообщение. Полный состав ответов приведён в OpenAPI.</p>
+<p>Подробный расчёт приведён в <a href="04-use-case.html">UC-01</a>, правила — в <a href="03-functional-requirements.html">функциональных требованиях</a>, а связи сохраняемых данных — в <a href="07-data-model.html">модели данных</a>.</p>
+<p>Те же операции и структуры ответов доступны в <a href="09-openapi.html">OpenAPI-описании</a>. Схемы с суффиксом <code>Item</code> описывают элементы списка в ответе API. В реляционной модели им соответствуют позиции <code>RecommendationLine</code>, <code>AllocationLine</code>, <code>ShipmentPlanLine</code> и <code>PurchasePlanLine</code>. Отдельных HTTP-операций для позиций нет.</p>
+<h2 id="диаграммы-последовательности">Диаграммы последовательности</h2>
+<h3 id="автоматическое-получение-данных">Автоматическое получение данных</h3>
+<p><button class="diagram-preview doc-image" type="button" data-image="../assets/diagrams/04-sequence-sync.png" data-title="Автоматическое получение данных" aria-label="Увеличить: Автоматическое получение данных" style="height:auto;background:white"><img src="../assets/diagrams/04-sequence-sync.png" alt="Автоматическое получение данных" loading="lazy"></button></p>
+<p>Форматы: <a href="../assets/diagrams/04-sequence-sync.png">PNG</a> · <a href="../assets/diagrams/04-sequence-sync.svg">SVG</a> · <a href="../assets/diagrams/04-sequence-sync.puml">PlantUML</a>.</p>
+<h3 id="предложение-и-решение-менеджера">Предложение и решение менеджера</h3>
+<p><button class="diagram-preview doc-image" type="button" data-image="../assets/diagrams/05-sequence-decision.png" data-title="Предложение и решение менеджера" aria-label="Увеличить: Предложение и решение менеджера" style="height:auto;background:white"><img src="../assets/diagrams/05-sequence-decision.png" alt="Предложение и решение менеджера" loading="lazy"></button></p>
+<p>Форматы: <a href="../assets/diagrams/05-sequence-decision.png">PNG</a> · <a href="../assets/diagrams/05-sequence-decision.svg">SVG</a> · <a href="../assets/diagrams/05-sequence-decision.puml">PlantUML</a>.</p>
+<p>Схема показывает общий порядок действий без привязки к количествам из примера: менеджер может принять исходное распределение, изменить его или отказаться. Перед утверждением система проверяет ограничения; планы создаются только при успешной проверке. Числовой пример приведён выше, в разделе «Пример решения по UC-01».</p>
+<p>Входные данные, серверные проверки, порядок расчёта и атомарное сохранение объединены в <a href="18-backend-logic.html">Backend-логике</a>.</p>
+</article></div></main><footer class="site-footer"><div class="wrap"><a class="brand" href="../index.html">StockFlow<span class="brand-sub">/ BA · SA</span></a><p>Мой кейс БА/СА. Прототип работает на вымышленных данных.</p><a href="../index.html#prototype">Попробовать сценарий ↗</a></div></footer><dialog class="image-dialog" id="image-dialog" aria-labelledby="image-title"><div class="dialog-head"><div><h2 id="image-title">Диаграмма</h2><div class="diagram-links"><a id="image-original" target="_blank" rel="noopener">Открыть полный размер ↗</a></div></div><button class="dialog-close" type="button" id="image-close" aria-label="Закрыть">×</button></div><div class="image-toolbar" role="group" aria-label="Масштаб диаграммы"><button type="button" id="image-zoom-out" aria-label="Уменьшить">−</button><output id="image-scale" aria-live="polite">100%</output><button type="button" id="image-zoom-in" aria-label="Увеличить">+</button><button type="button" id="image-fit">Вместить</button><button type="button" id="image-actual">100%</button></div><p class="image-help" id="image-help">Увеличьте схему и перемещайте её мышью или прокруткой. Клавиши + / − меняют масштаб.</p><div class="image-viewport" id="image-viewport" tabindex="0" role="region" aria-label="Область просмотра диаграммы" aria-describedby="image-help"><div class="image-canvas" id="image-canvas"><img id="image-full" alt="" draggable="false"></div></div></dialog></body></html>

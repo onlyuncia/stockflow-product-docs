@@ -1,0 +1,60 @@
+@startuml
+skinparam backgroundColor white
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 15
+skinparam shadowing false
+skinparam ArrowColor #45566F
+skinparam activityBackgroundColor #EEF3F9
+skinparam activityBorderColor #45566F
+skinparam activityDiamondBackgroundColor #FFF5DB
+skinparam activityDiamondBorderColor #45566F
+skinparam conditionStyle insideDiamond
+skinparam dpi 160
+
+title StockFlow · обработка рекомендации и принятие решения\nUML Activity Diagram
+
+start
+:**Менеджер**\nОткрыть рекомендацию; <<#E6EDF6>>
+:**StockFlow**\nПоказать потребность\nи полноту исходных данных; <<#F0F3F5>>
+if (Отклонить сразу?) then (да)
+  :**Менеджер**\nУказать причину отказа; <<#E6EDF6>>
+  :**StockFlow**\nСохранить отказ;\nне создавать планы; <<#F0F3F5>>
+  stop
+else (нет)
+
+if (Исходные данные\nполные?) then (нет)
+  :**StockFlow**\nПоказать недостающие данные;\nзаблокировать распределение\nи утверждение; <<#F0F3F5>>
+  stop
+else (да)
+
+repeat
+  :**Менеджер**\nЗаново подтвердить доступный\nостаток своего склада; <<#E6EDF6>>
+  :**StockFlow**\nСохранить снимок остатка;\nрассчитать и сохранить\nначальное предложение распределения; <<#F0F3F5>>
+  note right
+    Пример: потребность Ozon — 9, WB — 34.
+    Свой остаток — 30.
+    Предложение: 6/24; закупка — 13.
+  end note
+  :**Менеджер**\nРассмотреть предложение;\nпри необходимости изменить количества; <<#E6EDF6>>
+  if (Решение\nменеджера?) then (отклонить)
+    :**Менеджер**\nУказать причину отказа; <<#E6EDF6>>
+    :**StockFlow**\nСохранить отказ;\nне создавать планы; <<#F0F3F5>>
+    stop
+  else (утвердить)
+  :**StockFlow**\nПроверить полноту данных,\nнеиспользованное подтверждение остатка\nи допустимость количеств; <<#F0F3F5>>
+  endif
+  backward :**StockFlow**\nПоказать причину блокировки;\nне создавать решение и планы;
+repeat while (Проверки\nпройдены?) is (нет) not (да)
+
+:**StockFlow**\nСохранить утверждённое решение;\nсоздать планы для положительных\nколичеств; <<#F0F3F5>>
+note right
+  Пример решения: отгрузка 9/21,
+  закупка — 13.
+  Исходная рекомендация и предложение
+  остаются в истории без изменений.
+end note
+:**StockFlow**\nПоказать сохранённые планы; <<#F0F3F5>>
+stop
+endif
+endif
+@enduml

@@ -1,0 +1,1613 @@
+<!doctype html><html lang="ru" class="dark" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="OpenAPI 3.1 — документы и схемы StockFlow."><link rel="icon" href="../assets/favicon.svg?v=2"><meta name="theme-color" content="#080b12"><title>OpenAPI 3.1 · StockFlow</title><script src="../theme.js?v=1"></script><link rel="stylesheet" href="../assets/vendor/heroui/heroui.min.css"><link rel="stylesheet" href="../styles.css?v=8"><link rel="stylesheet" href="../theme.css?v=2"><script src="../documents.js?v=2" defer></script></head><body><a class="skip" href="#main">К содержанию</a><header class="site-header"><div class="wrap header-row"><a class="brand" href="../index.html"><svg class="logo" viewBox="0 0 40 40" aria-hidden="true" focusable="false"><rect x="1" y="1" width="38" height="38" rx="8" fill="var(--raised)" stroke="currentColor" stroke-width="1.2"/><path d="M10 10H30V14H10ZM10 18H22V22H10ZM10 26H26V30H10Z" fill="currentColor"/></svg>StockFlow<span class="brand-sub">/ кейс</span></a><nav aria-label="Основная навигация"><a href="../index.html#context">Контекст</a><a href="../documents.html">Документы</a><a href="../diagrams.html">Схемы</a></nav><div class="header-actions"><button type="button" class="theme-toggle button button--secondary button--sm" data-theme-toggle aria-label="Включить светлую тему"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/></svg><span>Светлая</span></button><a class="button small outline button--secondary button--sm" href="../index.html#prototype">К прототипу ↗</a></div></div></header><main id="main"><section class="page-hero"><div class="wrap"><a class="back-link" href="../documents.html">← Все документы</a><p class="kicker">Документация StockFlow / 09</p><h1>OpenAPI 3.1</h1><p class="lead">Машиночитаемый контракт основного сценария.</p><div class="document-tools"><a href="../source/docs/09-OPENAPI.json" download>Скачать исходник ↓</a><a href="../index.html#prototype">Проверить сценарий в прототипе ↗</a></div></div></section><div class="wrap document-layout"><aside class="document-nav" aria-label="Документы кейса"><a class="" href="01-process-as-is-to-be.html" >Процесс до и после</a><a class="" href="02-calculation-rules.html" >Правила расчёта</a><a class="" href="03-functional-requirements.html" >Функциональные требования</a><a class="" href="04-use-case.html" >Сквозной сценарий</a><a class="" href="05-acceptance-criteria.html" >Критерии приёмки</a><a class="" href="06-architecture.html" >Архитектура C4</a><a class="" href="07-data-model.html" >Модель PostgreSQL</a><a class="" href="08-api-contract.html" >Контракт взаимодействия</a><a class="active" href="09-openapi.html" aria-current="page">OpenAPI 3.1</a><a class="" href="10-diagrams.html" >Каталог диаграмм</a><a class="" href="11-stakeholders.html" >Участники процесса</a><a class="" href="12-constraints-dependencies.html" >Ограничения и зависимости</a><a class="" href="13-risks-mitigation.html" >Риски и меры снижения</a><a class="" href="14-results.html" >Результаты и наблюдения</a><a class="" href="15-project-success.html" >Критерии успеха</a><a class="" href="16-expansion-plans.html" >Направления расширения</a><a class="" href="17-non-functional-requirements.html" >Нефункциональные требования</a><a class="" href="18-backend-logic.html" >Backend-логика</a><a class="" href="case-stockflow.html" >Единый кейс</a></aside><article class="document-body"><p>Портфельная реконструкция внутреннего контракта StockFlow для сценария подсорта. Пути и примеры не являются выгрузкой из работающего сервера и не указывают на развёрнутый API. Доступ к данным селлера должен ограничиваться сервером; механизм аутентификации здесь не утверждается.</p><h2>Операции основного сценария</h2><div class="doc-table-scroll"><table><thead><tr><th>Метод</th><th>Путь</th><th>Назначение</th></tr></thead><tbody><tr><td><strong>GET</strong></td><td><code>/internal/v1/sellers/{sellerId}/marketplace-accounts/{accountId}/sync-state</code></td><td>Получить состояние автоматического обновления кабинета</td></tr><tr><td><strong>GET</strong></td><td><code>/internal/v1/sellers/{sellerId}/products/{productId}/recommendations/latest</code></td><td>Получить последнюю рекомендацию товара</td></tr><tr><td><strong>GET</strong></td><td><code>/internal/v1/sellers/{sellerId}/products/{productId}/recommendations/{recommendationId}</code></td><td>Прочитать сохранённую рекомендацию и её входные версии</td></tr><tr><td><strong>POST</strong></td><td><code>/internal/v1/sellers/{sellerId}/products/{productId}/own-stock-snapshots</code></td><td>Заново подтвердить остаток своего склада для утверждения</td></tr><tr><td><strong>POST</strong></td><td><code>/internal/v1/sellers/{sellerId}/products/{productId}/allocation-proposals</code></td><td>Рассчитать предложение отгрузки и закупки</td></tr><tr><td><strong>POST</strong></td><td><code>/internal/v1/sellers/{sellerId}/products/{productId}/decisions</code></td><td>Утвердить количества либо отклонить рекомендацию</td></tr><tr><td><strong>GET</strong></td><td><code>/internal/v1/sellers/{sellerId}/products/{productId}/decisions/{decisionId}</code></td><td>Прочитать историческое решение и утверждённые планы</td></tr></tbody></table></div><p><a href="../source/docs/09-OPENAPI.json" download>Скачать OpenAPI JSON ↓</a> для импорта в редактор Swagger или Postman.</p><details><summary>Полное содержимое контракта</summary><pre><code>{
+  &quot;openapi&quot;: &quot;3.1.0&quot;,
+  &quot;info&quot;: {
+    &quot;title&quot;: &quot;StockFlow — внутренний API основного сценария&quot;,
+    &quot;version&quot;: &quot;1.0.0-case&quot;,
+    &quot;description&quot;: &quot;Портфельная реконструкция внутреннего контракта StockFlow для сценария подсорта. Пути и примеры не являются выгрузкой из работающего сервера и не указывают на развёрнутый API. Доступ к данным селлера должен ограничиваться сервером; механизм аутентификации здесь не утверждается.&quot;
+  },
+  &quot;tags&quot;: [
+    {
+      &quot;name&quot;: &quot;Синхронизация&quot;
+    },
+    {
+      &quot;name&quot;: &quot;Рекомендации&quot;
+    },
+    {
+      &quot;name&quot;: &quot;Собственный склад&quot;
+    },
+    {
+      &quot;name&quot;: &quot;Распределение&quot;
+    },
+    {
+      &quot;name&quot;: &quot;Решения&quot;
+    }
+  ],
+  &quot;paths&quot;: {
+    &quot;/internal/v1/sellers/{sellerId}/marketplace-accounts/{accountId}/sync-state&quot;: {
+      &quot;parameters&quot;: [
+        {
+          &quot;$ref&quot;: &quot;#/components/parameters/sellerId&quot;
+        },
+        {
+          &quot;$ref&quot;: &quot;#/components/parameters/accountId&quot;
+        }
+      ],
+      &quot;get&quot;: {
+        &quot;tags&quot;: [
+          &quot;Синхронизация&quot;
+        ],
+        &quot;operationId&quot;: &quot;getAccountSyncState&quot;,
+        &quot;summary&quot;: &quot;Получить состояние автоматического обновления кабинета&quot;,
+        &quot;responses&quot;: {
+          &quot;200&quot;: {
+            &quot;description&quot;: &quot;Продажи и остатки показаны раздельно.&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/SyncState&quot;
+                }
+              }
+            }
+          },
+          &quot;404&quot;: {
+            &quot;description&quot;: &quot;Кабинет недоступен в области селлера.&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/ErrorResponse&quot;
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    &quot;/internal/v1/sellers/{sellerId}/products/{productId}/recommendations/latest&quot;: {
+      &quot;parameters&quot;: [
+        {
+          &quot;$ref&quot;: &quot;#/components/parameters/sellerId&quot;
+        },
+        {
+          &quot;$ref&quot;: &quot;#/components/parameters/productId&quot;
+        }
+      ],
+      &quot;get&quot;: {
+        &quot;tags&quot;: [
+          &quot;Рекомендации&quot;
+        ],
+        &quot;operationId&quot;: &quot;getLatestRecommendation&quot;,
+        &quot;summary&quot;: &quot;Получить последнюю рекомендацию товара&quot;,
+        &quot;responses&quot;: {
+          &quot;200&quot;: {
+            &quot;description&quot;: &quot;Последняя сохранённая рекомендация.&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Recommendation&quot;
+                },
+                &quot;example&quot;: {
+                  &quot;recommendationId&quot;: &quot;rec-demo-01&quot;,
+                  &quot;productId&quot;: &quot;SKU-DEMO-01&quot;,
+                  &quot;status&quot;: &quot;ready&quot;,
+                  &quot;totalRecommendedUnits&quot;: 43,
+                  &quot;lines&quot;: [
+                    {
+                      &quot;listingId&quot;: &quot;ozon-demo&quot;,
+                      &quot;accountId&quot;: &quot;ozon-account-demo&quot;,
+                      &quot;marketplace&quot;: &quot;Ozon&quot;,
+                      &quot;dataState&quot;: &quot;ready&quot;,
+                      &quot;salesUnits&quot;: 28,
+                      &quot;salesWindowDays&quot;: 28,
+                      &quot;marketplaceStockUnits&quot;: 12,
+                      &quot;targetCoverageDays&quot;: 21,
+                      &quot;recommendedUnits&quot;: 9,
+                      &quot;sourceSalesSnapshotId&quot;: &quot;sales-ozon-demo&quot;,
+                      &quot;sourceStockSnapshotId&quot;: &quot;stock-ozon-demo&quot;,
+                      &quot;ruleVersionId&quot;: &quot;rule-ozon-demo&quot;,
+                      &quot;targetStockUnits&quot;: 21,
+                      &quot;roundingPolicy&quot;: &quot;ceil&quot;,
+                      &quot;calculationIssue&quot;: null
+                    },
+                    {
+                      &quot;listingId&quot;: &quot;wb-demo&quot;,
+                      &quot;accountId&quot;: &quot;wb-account-demo&quot;,
+                      &quot;marketplace&quot;: &quot;Wildberries&quot;,
+                      &quot;dataState&quot;: &quot;ready&quot;,
+                      &quot;salesUnits&quot;: 56,
+                      &quot;salesWindowDays&quot;: 28,
+                      &quot;marketplaceStockUnits&quot;: 8,
+                      &quot;targetCoverageDays&quot;: 21,
+                      &quot;recommendedUnits&quot;: 34,
+                      &quot;sourceSalesSnapshotId&quot;: &quot;sales-wb-demo&quot;,
+                      &quot;sourceStockSnapshotId&quot;: &quot;stock-wb-demo&quot;,
+                      &quot;ruleVersionId&quot;: &quot;rule-wb-demo&quot;,
+                      &quot;targetStockUnits&quot;: 42,
+                      &quot;roundingPolicy&quot;: &quot;ceil&quot;,
+                      &quot;calculationIssue&quot;: null
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          &quot;404&quot;: {
+            &quot;description&quot;: &quot;Для товара нет доступной рекомендации.&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/ErrorResponse&quot;
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    &quot;/internal/v1/sellers/{sellerId}/products/{productId}/recommendations/{recommendationId}&quot;: {
+      &quot;parameters&quot;: [
+        {
+          &quot;$ref&quot;: &quot;#/components/parameters/sellerId&quot;
+        },
+        {
+          &quot;$ref&quot;: &quot;#/components/parameters/productId&quot;
+        },
+        {
+          &quot;$ref&quot;: &quot;#/components/parameters/recommendationId&quot;
+        }
+      ],
+      &quot;get&quot;: {
+        &quot;tags&quot;: [
+          &quot;Рекомендации&quot;
+        ],
+        &quot;operationId&quot;: &quot;getRecommendation&quot;,
+        &quot;summary&quot;: &quot;Прочитать сохранённую рекомендацию и её входные версии&quot;,
+        &quot;responses&quot;: {
+          &quot;200&quot;: {
+            &quot;description&quot;: &quot;Историческая рекомендация.&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Recommendation&quot;
+                },
+                &quot;example&quot;: {
+                  &quot;recommendationId&quot;: &quot;rec-demo-01&quot;,
+                  &quot;productId&quot;: &quot;SKU-DEMO-01&quot;,
+                  &quot;status&quot;: &quot;ready&quot;,
+                  &quot;totalRecommendedUnits&quot;: 43,
+                  &quot;lines&quot;: [
+                    {
+                      &quot;listingId&quot;: &quot;ozon-demo&quot;,
+                      &quot;accountId&quot;: &quot;ozon-account-demo&quot;,
+                      &quot;marketplace&quot;: &quot;Ozon&quot;,
+                      &quot;dataState&quot;: &quot;ready&quot;,
+                      &quot;salesUnits&quot;: 28,
+                      &quot;salesWindowDays&quot;: 28,
+                      &quot;marketplaceStockUnits&quot;: 12,
+                      &quot;targetCoverageDays&quot;: 21,
+                      &quot;recommendedUnits&quot;: 9,
+                      &quot;sourceSalesSnapshotId&quot;: &quot;sales-ozon-demo&quot;,
+                      &quot;sourceStockSnapshotId&quot;: &quot;stock-ozon-demo&quot;,
+                      &quot;ruleVersionId&quot;: &quot;rule-ozon-demo&quot;,
+                      &quot;targetStockUnits&quot;: 21,
+                      &quot;roundingPolicy&quot;: &quot;ceil&quot;,
+                      &quot;calculationIssue&quot;: null
+                    },
+                    {
+                      &quot;listingId&quot;: &quot;wb-demo&quot;,
+                      &quot;accountId&quot;: &quot;wb-account-demo&quot;,
+                      &quot;marketplace&quot;: &quot;Wildberries&quot;,
+                      &quot;dataState&quot;: &quot;ready&quot;,
+                      &quot;salesUnits&quot;: 56,
+                      &quot;salesWindowDays&quot;: 28,
+                      &quot;marketplaceStockUnits&quot;: 8,
+                      &quot;targetCoverageDays&quot;: 21,
+                      &quot;recommendedUnits&quot;: 34,
+                      &quot;sourceSalesSnapshotId&quot;: &quot;sales-wb-demo&quot;,
+                      &quot;sourceStockSnapshotId&quot;: &quot;stock-wb-demo&quot;,
+                      &quot;ruleVersionId&quot;: &quot;rule-wb-demo&quot;,
+                      &quot;targetStockUnits&quot;: 42,
+                      &quot;roundingPolicy&quot;: &quot;ceil&quot;,
+                      &quot;calculationIssue&quot;: null
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          &quot;404&quot;: {
+            &quot;description&quot;: &quot;Рекомендация недоступна в области селлера и товара.&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/ErrorResponse&quot;
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    &quot;/internal/v1/sellers/{sellerId}/products/{productId}/own-stock-snapshots&quot;: {
+      &quot;parameters&quot;: [
+        {
+          &quot;$ref&quot;: &quot;#/components/parameters/sellerId&quot;
+        },
+        {
+          &quot;$ref&quot;: &quot;#/components/parameters/productId&quot;
+        }
+      ],
+      &quot;post&quot;: {
+        &quot;tags&quot;: [
+          &quot;Собственный склад&quot;
+        ],
+        &quot;operationId&quot;: &quot;createOwnStockSnapshot&quot;,
+        &quot;summary&quot;: &quot;Заново подтвердить остаток своего склада для утверждения&quot;,
+        &quot;description&quot;: &quot;Менеджер подтверждает доступное количество перед каждым утверждением. Новый снимок не меняет прежние решения; фиксированного срока действия нет.&quot;,
+        &quot;requestBody&quot;: {
+          &quot;required&quot;: true,
+          &quot;content&quot;: {
+            &quot;application/json&quot;: {
+              &quot;schema&quot;: {
+                &quot;$ref&quot;: &quot;#/components/schemas/OwnStockInput&quot;
+              }
+            }
+          }
+        },
+        &quot;responses&quot;: {
+          &quot;201&quot;: {
+            &quot;description&quot;: &quot;Создан отдельный снимок, старые решения не изменены.&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/OwnStockSnapshot&quot;
+                }
+              }
+            }
+          },
+          &quot;400&quot;: {
+            &quot;description&quot;: &quot;Некорректная форма запроса.&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/ErrorResponse&quot;
+                }
+              }
+            }
+          },
+          &quot;404&quot;: {
+            &quot;description&quot;: &quot;Товар недоступен в области селлера.&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/ErrorResponse&quot;
+                }
+              }
+            }
+          },
+          &quot;422&quot;: {
+            &quot;description&quot;: &quot;Количество либо источник не могут быть приняты.&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/ErrorResponse&quot;
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    &quot;/internal/v1/sellers/{sellerId}/products/{productId}/allocation-proposals&quot;: {
+      &quot;parameters&quot;: [
+        {
+          &quot;$ref&quot;: &quot;#/components/parameters/sellerId&quot;
+        },
+        {
+          &quot;$ref&quot;: &quot;#/components/parameters/productId&quot;
+        }
+      ],
+      &quot;post&quot;: {
+        &quot;tags&quot;: [
+          &quot;Распределение&quot;
+        ],
+        &quot;operationId&quot;: &quot;createAllocationProposal&quot;,
+        &quot;summary&quot;: &quot;Рассчитать предложение отгрузки и закупки&quot;,
+        &quot;requestBody&quot;: {
+          &quot;required&quot;: true,
+          &quot;content&quot;: {
+            &quot;application/json&quot;: {
+              &quot;schema&quot;: {
+                &quot;$ref&quot;: &quot;#/components/schemas/AllocationProposalInput&quot;
+              },
+              &quot;example&quot;: {
+                &quot;recommendationId&quot;: &quot;rec-demo-01&quot;,
+                &quot;ownStockSnapshotId&quot;: &quot;own-stock-demo-01&quot;
+              }
+            }
+          }
+        },
+        &quot;responses&quot;: {
+          &quot;201&quot;: {
+            &quot;description&quot;: &quot;Сохранённое предложение на основе конкретных входных версий.&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/AllocationProposal&quot;
+                },
+                &quot;example&quot;: {
+                  &quot;allocationProposalId&quot;: &quot;alloc-demo-01&quot;,
+                  &quot;recommendationId&quot;: &quot;rec-demo-01&quot;,
+                  &quot;ownStockSnapshotId&quot;: &quot;own-stock-demo-01&quot;,
+                  &quot;allocationMethod&quot;: &quot;proportional_largest_remainder_v1&quot;,
+                  &quot;availableUnits&quot;: 30,
+                  &quot;proposedPurchaseUnits&quot;: 13,
+                  &quot;lines&quot;: [
+                    {
+                      &quot;listingId&quot;: &quot;ozon-demo&quot;,
+                      &quot;proposedShipmentUnits&quot;: 6
+                    },
+                    {
+                      &quot;listingId&quot;: &quot;wb-demo&quot;,
+                      &quot;proposedShipmentUnits&quot;: 24
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          &quot;400&quot;: {
+            &quot;description&quot;: &quot;Некорректная форма запроса.&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/ErrorResponse&quot;
+                }
+              }
+            }
+          },
+          &quot;404&quot;: {
+            &quot;description&quot;: &quot;Товар, рекомендация либо снимок недоступны.&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/ErrorResponse&quot;
+                }
+              }
+            }
+          },
+          &quot;409&quot;: {
+            &quot;description&quot;: &quot;Входные версии не подходят для нового предложения.&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/ErrorResponse&quot;
+                }
+              }
+            }
+          },
+          &quot;422&quot;: {
+            &quot;description&quot;: &quot;Рекомендация неполная или остаток не подтверждён.&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/ErrorResponse&quot;
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    &quot;/internal/v1/sellers/{sellerId}/products/{productId}/decisions&quot;: {
+      &quot;parameters&quot;: [
+        {
+          &quot;$ref&quot;: &quot;#/components/parameters/sellerId&quot;
+        },
+        {
+          &quot;$ref&quot;: &quot;#/components/parameters/productId&quot;
+        }
+      ],
+      &quot;post&quot;: {
+        &quot;tags&quot;: [
+          &quot;Решения&quot;
+        ],
+        &quot;operationId&quot;: &quot;createManagerDecision&quot;,
+        &quot;summary&quot;: &quot;Утвердить количества либо отклонить рекомендацию&quot;,
+        &quot;description&quot;: &quot;Утверждение создаёт отдельные планы с вложенными списками для положительных количеств; отклонение сохраняет решение без планов. Для каждого утверждения требуется новое подтверждение своего остатка: снимок, уже использованный в утверждённом решении, не принимается повторно. Повторное итоговое решение не создаёт второй план. Решение, заголовки планов и позиции сохраняются атомарно в одной транзакции PostgreSQL; ответ 201 возвращается после её завершения.&quot;,
+        &quot;requestBody&quot;: {
+          &quot;required&quot;: true,
+          &quot;content&quot;: {
+            &quot;application/json&quot;: {
+              &quot;schema&quot;: {
+                &quot;$ref&quot;: &quot;#/components/schemas/DecisionRequest&quot;
+              },
+              &quot;example&quot;: {
+                &quot;recommendationId&quot;: &quot;rec-demo-01&quot;,
+                &quot;allocationProposalId&quot;: &quot;alloc-demo-01&quot;,
+                &quot;action&quot;: &quot;approve&quot;,
+                &quot;shipmentLines&quot;: [
+                  {
+                    &quot;listingId&quot;: &quot;ozon-demo&quot;,
+                    &quot;units&quot;: 9
+                  },
+                  {
+                    &quot;listingId&quot;: &quot;wb-demo&quot;,
+                    &quot;units&quot;: 21
+                  }
+                ],
+                &quot;purchaseUnits&quot;: 13
+              }
+            }
+          }
+        },
+        &quot;responses&quot;: {
+          &quot;201&quot;: {
+            &quot;description&quot;: &quot;Итоговое решение сохранено.&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/ManagerDecision&quot;
+                }
+              }
+            }
+          },
+          &quot;400&quot;: {
+            &quot;description&quot;: &quot;Некорректная форма запроса.&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/ErrorResponse&quot;
+                }
+              }
+            }
+          },
+          &quot;404&quot;: {
+            &quot;description&quot;: &quot;Ресурс недоступен в области селлера.&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/ErrorResponse&quot;
+                }
+              }
+            }
+          },
+          &quot;409&quot;: {
+            &quot;description&quot;: &quot;Рекомендация уже получила итоговое решение, снимок своего склада использован в другом утверждении или входное состояние изменилось.&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/ErrorResponse&quot;
+                }
+              }
+            }
+          },
+          &quot;422&quot;: {
+            &quot;description&quot;: &quot;Нет подтверждённого остатка, недостаточно данных или превышен доступный запас.&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/ErrorResponse&quot;
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    &quot;/internal/v1/sellers/{sellerId}/products/{productId}/decisions/{decisionId}&quot;: {
+      &quot;parameters&quot;: [
+        {
+          &quot;$ref&quot;: &quot;#/components/parameters/sellerId&quot;
+        },
+        {
+          &quot;$ref&quot;: &quot;#/components/parameters/productId&quot;
+        },
+        {
+          &quot;$ref&quot;: &quot;#/components/parameters/decisionId&quot;
+        }
+      ],
+      &quot;get&quot;: {
+        &quot;tags&quot;: [
+          &quot;Решения&quot;
+        ],
+        &quot;operationId&quot;: &quot;getManagerDecision&quot;,
+        &quot;summary&quot;: &quot;Прочитать историческое решение и утверждённые планы&quot;,
+        &quot;responses&quot;: {
+          &quot;200&quot;: {
+            &quot;description&quot;: &quot;Сохранённое решение.&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/ManagerDecision&quot;
+                }
+              }
+            }
+          },
+          &quot;404&quot;: {
+            &quot;description&quot;: &quot;Решение недоступно в области селлера и товара.&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/ErrorResponse&quot;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  &quot;components&quot;: {
+    &quot;parameters&quot;: {
+      &quot;sellerId&quot;: {
+        &quot;name&quot;: &quot;sellerId&quot;,
+        &quot;in&quot;: &quot;path&quot;,
+        &quot;required&quot;: true,
+        &quot;description&quot;: &quot;Селлер, в пределах которого выполняется операция.&quot;,
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;minLength&quot;: 1
+        }
+      },
+      &quot;accountId&quot;: {
+        &quot;name&quot;: &quot;accountId&quot;,
+        &quot;in&quot;: &quot;path&quot;,
+        &quot;required&quot;: true,
+        &quot;description&quot;: &quot;Кабинет площадки.&quot;,
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;minLength&quot;: 1
+        }
+      },
+      &quot;productId&quot;: {
+        &quot;name&quot;: &quot;productId&quot;,
+        &quot;in&quot;: &quot;path&quot;,
+        &quot;required&quot;: true,
+        &quot;description&quot;: &quot;Внутренний товар селлера.&quot;,
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;minLength&quot;: 1
+        }
+      },
+      &quot;recommendationId&quot;: {
+        &quot;name&quot;: &quot;recommendationId&quot;,
+        &quot;in&quot;: &quot;path&quot;,
+        &quot;required&quot;: true,
+        &quot;description&quot;: &quot;Сохранённая рекомендация.&quot;,
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;minLength&quot;: 1
+        }
+      },
+      &quot;decisionId&quot;: {
+        &quot;name&quot;: &quot;decisionId&quot;,
+        &quot;in&quot;: &quot;path&quot;,
+        &quot;required&quot;: true,
+        &quot;description&quot;: &quot;Сохранённое решение.&quot;,
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;minLength&quot;: 1
+        }
+      }
+    },
+    &quot;schemas&quot;: {
+      &quot;ErrorResponse&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;description&quot;: &quot;Ошибка интерфейса.&quot;,
+        &quot;required&quot;: [
+          &quot;code&quot;,
+          &quot;message&quot;
+        ],
+        &quot;properties&quot;: {
+          &quot;code&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Машинный код причины.&quot;
+          },
+          &quot;message&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Сообщение для менеджера.&quot;
+          }
+        },
+        &quot;additionalProperties&quot;: false
+      },
+      &quot;SyncResult&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;description&quot;: &quot;Состояние синхронизации одного вида данных.&quot;,
+        &quot;required&quot;: [
+          &quot;sourceSystem&quot;,
+          &quot;status&quot;,
+          &quot;lastUpdatedAt&quot;,
+          &quot;errorCode&quot;
+        ],
+        &quot;properties&quot;: {
+          &quot;sourceSystem&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;API подключённой площадки.&quot;
+          },
+          &quot;status&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Результат обновления.&quot;,
+            &quot;enum&quot;: [
+              &quot;success&quot;,
+              &quot;error&quot;,
+              &quot;not_started&quot;
+            ]
+          },
+          &quot;lastUpdatedAt&quot;: {
+            &quot;type&quot;: [
+              &quot;string&quot;,
+              &quot;null&quot;
+            ],
+            &quot;format&quot;: &quot;date-time&quot;,
+            &quot;description&quot;: &quot;Время успешного обновления; null, если его не было.&quot;
+          },
+          &quot;errorCode&quot;: {
+            &quot;type&quot;: [
+              &quot;string&quot;,
+              &quot;null&quot;
+            ],
+            &quot;description&quot;: &quot;Код ошибки синхронизации, если она была.&quot;
+          }
+        },
+        &quot;additionalProperties&quot;: false
+      },
+      &quot;SyncState&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;description&quot;: &quot;Состояние автоматического получения продаж и остатков.&quot;,
+        &quot;required&quot;: [
+          &quot;sellerId&quot;,
+          &quot;accountId&quot;,
+          &quot;sales&quot;,
+          &quot;stock&quot;,
+          &quot;unmappedListingCount&quot;
+        ],
+        &quot;properties&quot;: {
+          &quot;sellerId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Селлер.&quot;
+          },
+          &quot;accountId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Кабинет маркетплейса.&quot;
+          },
+          &quot;sales&quot;: {
+            &quot;$ref&quot;: &quot;#/components/schemas/SyncResult&quot;
+          },
+          &quot;stock&quot;: {
+            &quot;$ref&quot;: &quot;#/components/schemas/SyncResult&quot;
+          },
+          &quot;unmappedListingCount&quot;: {
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 0,
+            &quot;description&quot;: &quot;Количество несопоставленных товаров площадки.&quot;
+          }
+        },
+        &quot;additionalProperties&quot;: false
+      },
+      &quot;RecommendationItem&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;description&quot;: &quot;Формат позиции RecommendationLine в массиве Recommendation.lines. В PostgreSQL позиция связана с рекомендацией и товаром площадки.&quot;,
+        &quot;required&quot;: [
+          &quot;listingId&quot;,
+          &quot;accountId&quot;,
+          &quot;marketplace&quot;,
+          &quot;dataState&quot;,
+          &quot;salesUnits&quot;,
+          &quot;salesWindowDays&quot;,
+          &quot;marketplaceStockUnits&quot;,
+          &quot;targetCoverageDays&quot;,
+          &quot;recommendedUnits&quot;,
+          &quot;sourceSalesSnapshotId&quot;,
+          &quot;sourceStockSnapshotId&quot;,
+          &quot;ruleVersionId&quot;,
+          &quot;targetStockUnits&quot;,
+          &quot;roundingPolicy&quot;,
+          &quot;calculationIssue&quot;
+        ],
+        &quot;properties&quot;: {
+          &quot;listingId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Товар площадки.&quot;
+          },
+          &quot;accountId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Кабинет площадки.&quot;
+          },
+          &quot;marketplace&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Название площадки.&quot;
+          },
+          &quot;dataState&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Наличие снимков продаж и остатка; ready не гарантирует наличие версии правила.&quot;,
+            &quot;enum&quot;: [
+              &quot;ready&quot;,
+              &quot;missing_sales&quot;,
+              &quot;missing_stock&quot;,
+              &quot;missing_both&quot;
+            ]
+          },
+          &quot;salesUnits&quot;: {
+            &quot;type&quot;: [
+              &quot;integer&quot;,
+              &quot;null&quot;
+            ],
+            &quot;minimum&quot;: 0,
+            &quot;description&quot;: &quot;Продажи за окно. Ноль при успешном обновлении отличается от null.&quot;
+          },
+          &quot;salesWindowDays&quot;: {
+            &quot;type&quot;: [
+              &quot;integer&quot;,
+              &quot;null&quot;
+            ],
+            &quot;minimum&quot;: 1,
+            &quot;description&quot;: &quot;Длина окна продаж.&quot;
+          },
+          &quot;marketplaceStockUnits&quot;: {
+            &quot;type&quot;: [
+              &quot;integer&quot;,
+              &quot;null&quot;
+            ],
+            &quot;minimum&quot;: 0,
+            &quot;description&quot;: &quot;Подтверждённый остаток площадки или null.&quot;
+          },
+          &quot;targetCoverageDays&quot;: {
+            &quot;type&quot;: [
+              &quot;integer&quot;,
+              &quot;null&quot;
+            ],
+            &quot;minimum&quot;: 1,
+            &quot;description&quot;: &quot;Целевое покрытие из версии правила.&quot;
+          },
+          &quot;recommendedUnits&quot;: {
+            &quot;type&quot;: [
+              &quot;integer&quot;,
+              &quot;null&quot;
+            ],
+            &quot;minimum&quot;: 0,
+            &quot;description&quot;: &quot;Расчётная потребность; null при недостатке данных.&quot;
+          },
+          &quot;sourceSalesSnapshotId&quot;: {
+            &quot;type&quot;: [
+              &quot;string&quot;,
+              &quot;null&quot;
+            ],
+            &quot;description&quot;: &quot;Снимок продаж, использованный в расчёте.&quot;
+          },
+          &quot;sourceStockSnapshotId&quot;: {
+            &quot;type&quot;: [
+              &quot;string&quot;,
+              &quot;null&quot;
+            ],
+            &quot;description&quot;: &quot;Снимок остатка площадки.&quot;
+          },
+          &quot;ruleVersionId&quot;: {
+            &quot;type&quot;: [
+              &quot;string&quot;,
+              &quot;null&quot;
+            ],
+            &quot;description&quot;: &quot;Версия правила этой строки.&quot;
+          },
+          &quot;targetStockUnits&quot;: {
+            &quot;type&quot;: [
+              &quot;integer&quot;,
+              &quot;null&quot;
+            ],
+            &quot;minimum&quot;: 0,
+            &quot;description&quot;: &quot;Целевой запас, приведённый к целым штукам по версии правила; null при невозможности его расчёта.&quot;
+          },
+          &quot;roundingPolicy&quot;: {
+            &quot;type&quot;: [
+              &quot;string&quot;,
+              &quot;null&quot;
+            ],
+            &quot;description&quot;: &quot;Правило округления целевого запаса из RuleVersion; null, если правило не определено.&quot;
+          },
+          &quot;calculationIssue&quot;: {
+            &quot;type&quot;: [
+              &quot;string&quot;,
+              &quot;null&quot;
+            ],
+            &quot;description&quot;: &quot;Причина невозможности расчёта; null при рассчитанном количестве.&quot;
+          }
+        },
+        &quot;additionalProperties&quot;: false,
+        &quot;allOf&quot;: [
+          {
+            &quot;if&quot;: {
+              &quot;properties&quot;: {
+                &quot;dataState&quot;: {
+                  &quot;const&quot;: &quot;ready&quot;
+                }
+              },
+              &quot;required&quot;: [
+                &quot;dataState&quot;
+              ]
+            },
+            &quot;then&quot;: {
+              &quot;properties&quot;: {
+                &quot;salesUnits&quot;: {
+                  &quot;type&quot;: &quot;integer&quot;
+                },
+                &quot;salesWindowDays&quot;: {
+                  &quot;type&quot;: &quot;integer&quot;
+                },
+                &quot;sourceSalesSnapshotId&quot;: {
+                  &quot;type&quot;: &quot;string&quot;
+                },
+                &quot;marketplaceStockUnits&quot;: {
+                  &quot;type&quot;: &quot;integer&quot;
+                },
+                &quot;sourceStockSnapshotId&quot;: {
+                  &quot;type&quot;: &quot;string&quot;
+                }
+              }
+            }
+          },
+          {
+            &quot;if&quot;: {
+              &quot;properties&quot;: {
+                &quot;dataState&quot;: {
+                  &quot;const&quot;: &quot;missing_sales&quot;
+                }
+              },
+              &quot;required&quot;: [
+                &quot;dataState&quot;
+              ]
+            },
+            &quot;then&quot;: {
+              &quot;properties&quot;: {
+                &quot;salesUnits&quot;: {
+                  &quot;type&quot;: &quot;null&quot;
+                },
+                &quot;salesWindowDays&quot;: {
+                  &quot;type&quot;: &quot;null&quot;
+                },
+                &quot;sourceSalesSnapshotId&quot;: {
+                  &quot;type&quot;: &quot;null&quot;
+                },
+                &quot;marketplaceStockUnits&quot;: {
+                  &quot;type&quot;: &quot;integer&quot;
+                },
+                &quot;sourceStockSnapshotId&quot;: {
+                  &quot;type&quot;: &quot;string&quot;
+                },
+                &quot;recommendedUnits&quot;: {
+                  &quot;type&quot;: &quot;null&quot;
+                }
+              }
+            }
+          },
+          {
+            &quot;if&quot;: {
+              &quot;properties&quot;: {
+                &quot;dataState&quot;: {
+                  &quot;const&quot;: &quot;missing_stock&quot;
+                }
+              },
+              &quot;required&quot;: [
+                &quot;dataState&quot;
+              ]
+            },
+            &quot;then&quot;: {
+              &quot;properties&quot;: {
+                &quot;salesUnits&quot;: {
+                  &quot;type&quot;: &quot;integer&quot;
+                },
+                &quot;salesWindowDays&quot;: {
+                  &quot;type&quot;: &quot;integer&quot;
+                },
+                &quot;sourceSalesSnapshotId&quot;: {
+                  &quot;type&quot;: &quot;string&quot;
+                },
+                &quot;marketplaceStockUnits&quot;: {
+                  &quot;type&quot;: &quot;null&quot;
+                },
+                &quot;sourceStockSnapshotId&quot;: {
+                  &quot;type&quot;: &quot;null&quot;
+                },
+                &quot;recommendedUnits&quot;: {
+                  &quot;type&quot;: &quot;null&quot;
+                }
+              }
+            }
+          },
+          {
+            &quot;if&quot;: {
+              &quot;properties&quot;: {
+                &quot;dataState&quot;: {
+                  &quot;const&quot;: &quot;missing_both&quot;
+                }
+              },
+              &quot;required&quot;: [
+                &quot;dataState&quot;
+              ]
+            },
+            &quot;then&quot;: {
+              &quot;properties&quot;: {
+                &quot;salesUnits&quot;: {
+                  &quot;type&quot;: &quot;null&quot;
+                },
+                &quot;salesWindowDays&quot;: {
+                  &quot;type&quot;: &quot;null&quot;
+                },
+                &quot;sourceSalesSnapshotId&quot;: {
+                  &quot;type&quot;: &quot;null&quot;
+                },
+                &quot;marketplaceStockUnits&quot;: {
+                  &quot;type&quot;: &quot;null&quot;
+                },
+                &quot;sourceStockSnapshotId&quot;: {
+                  &quot;type&quot;: &quot;null&quot;
+                },
+                &quot;recommendedUnits&quot;: {
+                  &quot;type&quot;: &quot;null&quot;
+                }
+              }
+            }
+          },
+          {
+            &quot;if&quot;: {
+              &quot;properties&quot;: {
+                &quot;recommendedUnits&quot;: {
+                  &quot;type&quot;: &quot;integer&quot;
+                }
+              },
+              &quot;required&quot;: [
+                &quot;recommendedUnits&quot;
+              ]
+            },
+            &quot;then&quot;: {
+              &quot;properties&quot;: {
+                &quot;dataState&quot;: {
+                  &quot;const&quot;: &quot;ready&quot;
+                },
+                &quot;targetStockUnits&quot;: {
+                  &quot;type&quot;: &quot;integer&quot;
+                },
+                &quot;targetCoverageDays&quot;: {
+                  &quot;type&quot;: &quot;integer&quot;
+                },
+                &quot;roundingPolicy&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;minLength&quot;: 1
+                },
+                &quot;ruleVersionId&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;minLength&quot;: 1
+                },
+                &quot;calculationIssue&quot;: {
+                  &quot;type&quot;: &quot;null&quot;
+                }
+              }
+            },
+            &quot;else&quot;: {
+              &quot;properties&quot;: {
+                &quot;calculationIssue&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;pattern&quot;: &quot;\\S&quot;
+                }
+              }
+            }
+          }
+        ]
+      },
+      &quot;Recommendation&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;description&quot;: &quot;Исходная потребность площадок до ограничения своим складом. Список lines является частью рекомендации.&quot;,
+        &quot;required&quot;: [
+          &quot;recommendationId&quot;,
+          &quot;productId&quot;,
+          &quot;status&quot;,
+          &quot;totalRecommendedUnits&quot;,
+          &quot;lines&quot;
+        ],
+        &quot;properties&quot;: {
+          &quot;recommendationId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Идентификатор сохранённой рекомендации.&quot;
+          },
+          &quot;productId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Внутренний товар селлера.&quot;
+          },
+          &quot;status&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Готовность рекомендации.&quot;,
+            &quot;enum&quot;: [
+              &quot;ready&quot;,
+              &quot;incomplete&quot;
+            ]
+          },
+          &quot;totalRecommendedUnits&quot;: {
+            &quot;type&quot;: [
+              &quot;integer&quot;,
+              &quot;null&quot;
+            ],
+            &quot;minimum&quot;: 0,
+            &quot;description&quot;: &quot;Сумма всех строк; null, если хотя бы одна строка не рассчитана.&quot;
+          },
+          &quot;lines&quot;: {
+            &quot;type&quot;: &quot;array&quot;,
+            &quot;minItems&quot;: 1,
+            &quot;items&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/RecommendationItem&quot;
+            }
+          }
+        },
+        &quot;additionalProperties&quot;: false,
+        &quot;allOf&quot;: [
+          {
+            &quot;if&quot;: {
+              &quot;properties&quot;: {
+                &quot;status&quot;: {
+                  &quot;const&quot;: &quot;ready&quot;
+                }
+              },
+              &quot;required&quot;: [
+                &quot;status&quot;
+              ]
+            },
+            &quot;then&quot;: {
+              &quot;properties&quot;: {
+                &quot;totalRecommendedUnits&quot;: {
+                  &quot;type&quot;: &quot;integer&quot;
+                },
+                &quot;lines&quot;: {
+                  &quot;items&quot;: {
+                    &quot;properties&quot;: {
+                      &quot;recommendedUnits&quot;: {
+                        &quot;type&quot;: &quot;integer&quot;
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            &quot;else&quot;: {
+              &quot;properties&quot;: {
+                &quot;totalRecommendedUnits&quot;: {
+                  &quot;type&quot;: &quot;null&quot;
+                },
+                &quot;lines&quot;: {
+                  &quot;contains&quot;: {
+                    &quot;properties&quot;: {
+                      &quot;recommendedUnits&quot;: {
+                        &quot;type&quot;: &quot;null&quot;
+                      }
+                    },
+                    &quot;required&quot;: [
+                      &quot;recommendedUnits&quot;
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      &quot;OwnStockInput&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;description&quot;: &quot;Новое подтверждение доступного остатка менеджером перед утверждением плана. Фиксированного срока действия нет.&quot;,
+        &quot;required&quot;: [
+          &quot;availableUnits&quot;,
+          &quot;sourceKind&quot;,
+          &quot;sourceLabel&quot;,
+          &quot;sourceObservedAt&quot;
+        ],
+        &quot;properties&quot;: {
+          &quot;availableUnits&quot;: {
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 0,
+            &quot;description&quot;: &quot;Доступное к распределению количество собственного склада.&quot;
+          },
+          &quot;sourceKind&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Вид учёта селлера.&quot;,
+            &quot;enum&quot;: [
+              &quot;accounting_system&quot;,
+              &quot;seller_table&quot;
+            ]
+          },
+          &quot;sourceLabel&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Понятное менеджеру обозначение источника.&quot;
+          },
+          &quot;sourceObservedAt&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;format&quot;: &quot;date-time&quot;,
+            &quot;description&quot;: &quot;Время исходного остатка в учёте селлера.&quot;
+          }
+        },
+        &quot;additionalProperties&quot;: false
+      },
+      &quot;OwnStockSnapshot&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;description&quot;: &quot;Подтверждённый снимок своего склада.&quot;,
+        &quot;required&quot;: [
+          &quot;ownStockSnapshotId&quot;,
+          &quot;productId&quot;,
+          &quot;availableUnits&quot;,
+          &quot;sourceKind&quot;,
+          &quot;sourceLabel&quot;,
+          &quot;sourceObservedAt&quot;,
+          &quot;confirmedAt&quot;,
+          &quot;confirmedBy&quot;
+        ],
+        &quot;properties&quot;: {
+          &quot;ownStockSnapshotId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Идентификатор неизменяемого снимка.&quot;
+          },
+          &quot;productId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Внутренний товар.&quot;
+          },
+          &quot;availableUnits&quot;: {
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 0,
+            &quot;description&quot;: &quot;Принятое количество.&quot;
+          },
+          &quot;sourceKind&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Вид источника.&quot;,
+            &quot;enum&quot;: [
+              &quot;accounting_system&quot;,
+              &quot;seller_table&quot;
+            ]
+          },
+          &quot;sourceLabel&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Обозначение источника.&quot;
+          },
+          &quot;sourceObservedAt&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;format&quot;: &quot;date-time&quot;,
+            &quot;description&quot;: &quot;Время исходного остатка.&quot;
+          },
+          &quot;confirmedAt&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;format&quot;: &quot;date-time&quot;,
+            &quot;description&quot;: &quot;Время нового подтверждения остатка в StockFlow.&quot;
+          },
+          &quot;confirmedBy&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Менеджер, подтвердивший значение; определяется сервером.&quot;
+          }
+        },
+        &quot;additionalProperties&quot;: false
+      },
+      &quot;AllocationProposalInput&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;description&quot;: &quot;Запрос предложения распределения.&quot;,
+        &quot;required&quot;: [
+          &quot;recommendationId&quot;,
+          &quot;ownStockSnapshotId&quot;
+        ],
+        &quot;properties&quot;: {
+          &quot;recommendationId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Рекомендация, потребность которой распределяется.&quot;
+          },
+          &quot;ownStockSnapshotId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Подтверждённый снимок собственного склада.&quot;
+          }
+        },
+        &quot;additionalProperties&quot;: false
+      },
+      &quot;AllocationItem&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;description&quot;: &quot;Формат позиции AllocationLine в массиве AllocationProposal.lines. В PostgreSQL позиция связана с предложением и товаром площадки.&quot;,
+        &quot;required&quot;: [
+          &quot;listingId&quot;,
+          &quot;proposedShipmentUnits&quot;
+        ],
+        &quot;properties&quot;: {
+          &quot;listingId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Товар площадки.&quot;
+          },
+          &quot;proposedShipmentUnits&quot;: {
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 0,
+            &quot;description&quot;: &quot;Предложенное количество из своего склада.&quot;
+          }
+        },
+        &quot;additionalProperties&quot;: false
+      },
+      &quot;AllocationProposal&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;description&quot;: &quot;Начальное пропорциональное распределение до решения менеджера. При дефиците целые штуки назначаются методом наибольших дробных остатков. Список lines является частью предложения.&quot;,
+        &quot;required&quot;: [
+          &quot;allocationProposalId&quot;,
+          &quot;recommendationId&quot;,
+          &quot;ownStockSnapshotId&quot;,
+          &quot;allocationMethod&quot;,
+          &quot;availableUnits&quot;,
+          &quot;proposedPurchaseUnits&quot;,
+          &quot;lines&quot;
+        ],
+        &quot;properties&quot;: {
+          &quot;allocationProposalId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Идентификатор сохранённого предложения.&quot;
+          },
+          &quot;recommendationId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Исходная рекомендация.&quot;
+          },
+          &quot;ownStockSnapshotId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Принятый остаток своего склада.&quot;
+          },
+          &quot;allocationMethod&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;enum&quot;: [
+              &quot;proportional_largest_remainder_v1&quot;
+            ],
+            &quot;description&quot;: &quot;Версия метода расчёта начального предложения.&quot;
+          },
+          &quot;availableUnits&quot;: {
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 0,
+            &quot;description&quot;: &quot;Доступное к распределению количество.&quot;
+          },
+          &quot;proposedPurchaseUnits&quot;: {
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 0,
+            &quot;description&quot;: &quot;Недостающее количество для отдельной закупки.&quot;
+          },
+          &quot;lines&quot;: {
+            &quot;type&quot;: &quot;array&quot;,
+            &quot;minItems&quot;: 1,
+            &quot;items&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/AllocationItem&quot;
+            }
+          }
+        },
+        &quot;additionalProperties&quot;: false
+      },
+      &quot;ShipmentApprovalItem&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;description&quot;: &quot;Элемент списка shipmentLines в запросе утверждения. Нулевое количество не включается в сохранённый план.&quot;,
+        &quot;required&quot;: [
+          &quot;listingId&quot;,
+          &quot;units&quot;
+        ],
+        &quot;properties&quot;: {
+          &quot;listingId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Товар площадки.&quot;
+          },
+          &quot;units&quot;: {
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 0,
+            &quot;description&quot;: &quot;Утверждаемое количество для текущей отгрузки.&quot;
+          }
+        },
+        &quot;additionalProperties&quot;: false
+      },
+      &quot;ApproveDecisionRequest&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;description&quot;: &quot;Утверждение менеджера.&quot;,
+        &quot;required&quot;: [
+          &quot;recommendationId&quot;,
+          &quot;allocationProposalId&quot;,
+          &quot;action&quot;,
+          &quot;shipmentLines&quot;,
+          &quot;purchaseUnits&quot;
+        ],
+        &quot;properties&quot;: {
+          &quot;recommendationId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Исходная рекомендация.&quot;
+          },
+          &quot;allocationProposalId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Рассмотренное предложение распределения.&quot;
+          },
+          &quot;action&quot;: {
+            &quot;const&quot;: &quot;approve&quot;,
+            &quot;description&quot;: &quot;Утвердить исходные либо изменённые количества.&quot;
+          },
+          &quot;shipmentLines&quot;: {
+            &quot;type&quot;: &quot;array&quot;,
+            &quot;minItems&quot;: 0,
+            &quot;items&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/ShipmentApprovalItem&quot;
+            },
+            &quot;description&quot;: &quot;Допускается пустой список для одной закупки. listingId не повторяется; сервер проверяет принадлежность рекомендации и сумму отгрузки.&quot;
+          },
+          &quot;purchaseUnits&quot;: {
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 0,
+            &quot;description&quot;: &quot;Отдельно утверждаемое количество к закупке.&quot;
+          },
+          &quot;reason&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Причина изменения предложения; при необходимости.&quot;
+          }
+        },
+        &quot;additionalProperties&quot;: false
+      },
+      &quot;RejectDecisionRequest&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;description&quot;: &quot;Отклонение менеджера.&quot;,
+        &quot;required&quot;: [
+          &quot;recommendationId&quot;,
+          &quot;action&quot;,
+          &quot;reason&quot;
+        ],
+        &quot;properties&quot;: {
+          &quot;recommendationId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Отклоняемая рекомендация.&quot;
+          },
+          &quot;action&quot;: {
+            &quot;const&quot;: &quot;reject&quot;,
+            &quot;description&quot;: &quot;Отклонить без создания планов.&quot;
+          },
+          &quot;reason&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Почему менеджер не принимает рекомендацию.&quot;,
+            &quot;pattern&quot;: &quot;\\S&quot;
+          },
+          &quot;allocationProposalId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;minLength&quot;: 1,
+            &quot;description&quot;: &quot;Рассмотренное предложение; передаётся при отказе после его просмотра. Для раннего отказа не требуется.&quot;
+          }
+        },
+        &quot;additionalProperties&quot;: false
+      },
+      &quot;DecisionRequest&quot;: {
+        &quot;oneOf&quot;: [
+          {
+            &quot;$ref&quot;: &quot;#/components/schemas/ApproveDecisionRequest&quot;
+          },
+          {
+            &quot;$ref&quot;: &quot;#/components/schemas/RejectDecisionRequest&quot;
+          }
+        ],
+        &quot;description&quot;: &quot;Утверждение либо отклонение. Сервер проверяет принадлежность ресурсов одному селлеру и товару.&quot;
+      },
+      &quot;ManagerDecision&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;description&quot;: &quot;Историческое решение с отдельными объектами планов отгрузки и закупки. Нулевой объём не создаёт соответствующий план. При утверждении обоих нулевых объёмов сохраняется решение без планов.&quot;,
+        &quot;required&quot;: [
+          &quot;decisionId&quot;,
+          &quot;recommendationId&quot;,
+          &quot;allocationProposalId&quot;,
+          &quot;ownStockSnapshotId&quot;,
+          &quot;status&quot;,
+          &quot;decidedBy&quot;,
+          &quot;decidedAt&quot;,
+          &quot;shipmentPlan&quot;,
+          &quot;purchasePlan&quot;,
+          &quot;reason&quot;
+        ],
+        &quot;properties&quot;: {
+          &quot;decisionId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Сохранённое итоговое решение.&quot;
+          },
+          &quot;recommendationId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Исходная рекомендация.&quot;
+          },
+          &quot;allocationProposalId&quot;: {
+            &quot;type&quot;: [
+              &quot;string&quot;,
+              &quot;null&quot;
+            ],
+            &quot;description&quot;: &quot;Рассмотренное предложение; null при раннем отклонении.&quot;
+          },
+          &quot;ownStockSnapshotId&quot;: {
+            &quot;type&quot;: [
+              &quot;string&quot;,
+              &quot;null&quot;
+            ],
+            &quot;description&quot;: &quot;Снимок рассмотренного предложения; null при раннем отклонении. При утверждении должен быть не использован прежним утверждением.&quot;
+          },
+          &quot;status&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Итог.&quot;,
+            &quot;enum&quot;: [
+              &quot;approved&quot;,
+              &quot;rejected&quot;
+            ]
+          },
+          &quot;decidedBy&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Менеджер, принявший решение; определяется сервером.&quot;
+          },
+          &quot;decidedAt&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;format&quot;: &quot;date-time&quot;,
+            &quot;description&quot;: &quot;Время решения.&quot;
+          },
+          &quot;reason&quot;: {
+            &quot;type&quot;: [
+              &quot;string&quot;,
+              &quot;null&quot;
+            ],
+            &quot;description&quot;: &quot;Причина изменения или отклонения.&quot;
+          },
+          &quot;shipmentPlan&quot;: {
+            &quot;anyOf&quot;: [
+              {
+                &quot;$ref&quot;: &quot;#/components/schemas/ShipmentPlan&quot;
+              },
+              {
+                &quot;type&quot;: &quot;null&quot;
+              }
+            ],
+            &quot;description&quot;: &quot;План отгрузки; null при отказе или отсутствии положительных количеств отгрузки.&quot;
+          },
+          &quot;purchasePlan&quot;: {
+            &quot;anyOf&quot;: [
+              {
+                &quot;$ref&quot;: &quot;#/components/schemas/PurchasePlan&quot;
+              },
+              {
+                &quot;type&quot;: &quot;null&quot;
+              }
+            ],
+            &quot;description&quot;: &quot;План закупки; null при отказе или нулевом количестве закупки.&quot;
+          }
+        },
+        &quot;additionalProperties&quot;: false,
+        &quot;allOf&quot;: [
+          {
+            &quot;if&quot;: {
+              &quot;properties&quot;: {
+                &quot;status&quot;: {
+                  &quot;const&quot;: &quot;approved&quot;
+                }
+              },
+              &quot;required&quot;: [
+                &quot;status&quot;
+              ]
+            },
+            &quot;then&quot;: {
+              &quot;properties&quot;: {
+                &quot;allocationProposalId&quot;: {
+                  &quot;type&quot;: &quot;string&quot;
+                },
+                &quot;ownStockSnapshotId&quot;: {
+                  &quot;type&quot;: &quot;string&quot;
+                }
+              }
+            },
+            &quot;else&quot;: {
+              &quot;properties&quot;: {
+                &quot;shipmentPlan&quot;: {
+                  &quot;type&quot;: &quot;null&quot;
+                },
+                &quot;purchasePlan&quot;: {
+                  &quot;type&quot;: &quot;null&quot;
+                },
+                &quot;reason&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;minLength&quot;: 1,
+                  &quot;pattern&quot;: &quot;\\S&quot;
+                }
+              }
+            }
+          }
+        ]
+      },
+      &quot;ShipmentPlanItem&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;description&quot;: &quot;Формат позиции ShipmentPlanLine в массиве ShipmentPlan.lines. Ключ в БД — план и товар площадки; родительский идентификатор не повторяется во вложенном ответе.&quot;,
+        &quot;required&quot;: [
+          &quot;listingId&quot;,
+          &quot;approvedShipmentUnits&quot;
+        ],
+        &quot;properties&quot;: {
+          &quot;listingId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Товар площадки.&quot;
+          },
+          &quot;approvedShipmentUnits&quot;: {
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 1,
+            &quot;description&quot;: &quot;Утверждённое количество к отгрузке.&quot;
+          }
+        },
+        &quot;additionalProperties&quot;: false
+      },
+      &quot;PurchasePlanItem&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;description&quot;: &quot;Формат позиции PurchasePlanLine в массиве PurchasePlan.lines. Ключ в БД — план и внутренний товар; родительский идентификатор не повторяется во вложенном ответе.&quot;,
+        &quot;required&quot;: [
+          &quot;productId&quot;,
+          &quot;approvedPurchaseUnits&quot;
+        ],
+        &quot;properties&quot;: {
+          &quot;productId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Внутренний товар.&quot;
+          },
+          &quot;approvedPurchaseUnits&quot;: {
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 1,
+            &quot;description&quot;: &quot;Утверждённое количество к закупке.&quot;
+          }
+        },
+        &quot;additionalProperties&quot;: false
+      },
+      &quot;ShipmentPlan&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;description&quot;: &quot;План отгрузки на основании утверждённого решения по одному внутреннему товару. Фактическую отправку не подтверждает. Список lines является частью плана.&quot;,
+        &quot;required&quot;: [
+          &quot;shipmentPlanId&quot;,
+          &quot;decisionId&quot;,
+          &quot;createdAt&quot;,
+          &quot;lines&quot;
+        ],
+        &quot;properties&quot;: {
+          &quot;shipmentPlanId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Идентификатор плана отгрузки.&quot;
+          },
+          &quot;decisionId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Утверждённое решение-основание.&quot;
+          },
+          &quot;createdAt&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;format&quot;: &quot;date-time&quot;,
+            &quot;description&quot;: &quot;Время создания плана.&quot;
+          },
+          &quot;lines&quot;: {
+            &quot;type&quot;: &quot;array&quot;,
+            &quot;minItems&quot;: 1,
+            &quot;items&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/ShipmentPlanItem&quot;
+            },
+            &quot;description&quot;: &quot;Положительные количества по товарам площадок; один товар площадки не повторяется.&quot;
+          }
+        },
+        &quot;additionalProperties&quot;: false
+      },
+      &quot;PurchasePlan&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;description&quot;: &quot;План закупки на основании утверждённого решения. В текущем сценарии содержит строку одного внутреннего товара; заказ поставщику выполняется вне StockFlow. Список lines является частью плана.&quot;,
+        &quot;required&quot;: [
+          &quot;purchasePlanId&quot;,
+          &quot;decisionId&quot;,
+          &quot;createdAt&quot;,
+          &quot;lines&quot;
+        ],
+        &quot;properties&quot;: {
+          &quot;purchasePlanId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Идентификатор плана закупки.&quot;
+          },
+          &quot;decisionId&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Утверждённое решение-основание.&quot;
+          },
+          &quot;createdAt&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;format&quot;: &quot;date-time&quot;,
+            &quot;description&quot;: &quot;Время создания плана.&quot;
+          },
+          &quot;lines&quot;: {
+            &quot;type&quot;: &quot;array&quot;,
+            &quot;minItems&quot;: 1,
+            &quot;maxItems&quot;: 1,
+            &quot;items&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/PurchasePlanItem&quot;
+            },
+            &quot;description&quot;: &quot;Строка закупки внутреннего товара, по которому принято решение.&quot;
+          }
+        },
+        &quot;additionalProperties&quot;: false
+      }
+    }
+  }
+}
+</code></pre></details></article></div></main><footer class="site-footer"><div class="wrap"><a class="brand" href="../index.html">StockFlow<span class="brand-sub">/ BA · SA</span></a><p>Мой кейс БА/СА. Прототип работает на вымышленных данных.</p><a href="../index.html#prototype">Попробовать сценарий ↗</a></div></footer><dialog class="image-dialog" id="image-dialog" aria-labelledby="image-title"><div class="dialog-head"><div><h2 id="image-title">Диаграмма</h2><div class="diagram-links"><a id="image-original" target="_blank" rel="noopener">Открыть полный размер ↗</a></div></div><button class="dialog-close" type="button" id="image-close" aria-label="Закрыть">×</button></div><div class="image-toolbar" role="group" aria-label="Масштаб диаграммы"><button type="button" id="image-zoom-out" aria-label="Уменьшить">−</button><output id="image-scale" aria-live="polite">100%</output><button type="button" id="image-zoom-in" aria-label="Увеличить">+</button><button type="button" id="image-fit">Вместить</button><button type="button" id="image-actual">100%</button></div><p class="image-help" id="image-help">Увеличьте схему и перемещайте её мышью или прокруткой. Клавиши + / − меняют масштаб.</p><div class="image-viewport" id="image-viewport" tabindex="0" role="region" aria-label="Область просмотра диаграммы" aria-describedby="image-help"><div class="image-canvas" id="image-canvas"><img id="image-full" alt="" draggable="false"></div></div></dialog></body></html>

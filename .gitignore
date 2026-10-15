@@ -1,0 +1,7 @@
+prototype/node_modules/
+__pycache__/
+*.pyc
+tmp/
+.DS_Store
+Thumbs.db
+# Commit prototype/dist, document sources and output/pdf/case-stockflow.pdf.

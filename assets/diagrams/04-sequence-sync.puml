@@ -1,0 +1,57 @@
+@startuml
+skinparam backgroundColor white
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 15
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam ArrowColor #45566F
+skinparam LineColor #45566F
+skinparam NoteBackgroundColor #FFF5DB
+skinparam NoteBorderColor #C5A659
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+skinparam monochrome false
+skinparam dpi 160
+
+title StockFlow · автоматическое получение данных и рекомендация
+hide footbox
+autonumber
+participant "Синхронизация\nStockFlow" as S
+participant "API площадки" as MP
+participant "Сопоставление\nи расчёт" as C
+database "Данные и история" as D
+S -> MP : Запросить продажи и остатки кабинета
+alt Данные получены
+ MP --> S : Продажи, остатки и контекст источника
+ S -> D : Сохранить входные снимки и успешное обновление
+ D --> S : Идентификаторы снимков
+ S -> C : Сопоставить товары и проверить полноту
+ alt Товар сопоставлен, данные полные
+  C -> D : Прочитать версию правил товара и площадки
+  D --> C : Версия правила либо её отсутствие
+  alt Правило определено
+   C -> C : Рассчитать потребность до учёта своего склада
+   C -> D : Сохранить новую рекомендацию и ссылки на версии
+   D --> C : recommendationId
+  else Правило отсутствует
+   C -> D : Сохранить incomplete и calculationIssue;\nне подставлять нулевую потребность
+   D --> C : recommendationId
+  end
+ else Нет сопоставления или необходимых данных
+  C -> D : Сохранить причину; не подставлять нули
+  note right of C
+  Несопоставленная строка не попадает
+  в расчёт другого SKU.
+  Для сопоставленного товара при нехватке
+  данных рекомендация имеет статус incomplete.
+  end note
+ end
+else Ошибка или отсутствие ответа API
+ MP --> S : Ошибка запроса
+ S -> D : Сохранить ошибку обновления
+ note right of S
+ Ошибка не означает нулевой остаток.
+ Старые снимки и решения сохраняются.
+ end note
+end
+@enduml

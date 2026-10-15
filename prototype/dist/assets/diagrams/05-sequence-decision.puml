@@ -1,0 +1,65 @@
+@startuml
+skinparam backgroundColor white
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 15
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam ArrowColor #45566F
+skinparam LineColor #45566F
+skinparam NoteBackgroundColor #FFF5DB
+skinparam NoteBorderColor #C5A659
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+skinparam monochrome false
+skinparam dpi 160
+
+title StockFlow · предложение и решение менеджера
+hide footbox
+autonumber
+actor "Менеджер" as M
+participant "Интерфейс" as UI
+participant "StockFlow API" as API
+database "Данные и история" as D
+M -> UI : Открыть подсорт товара
+UI -> API : GET recommendations/latest
+API -> D : Прочитать последнюю рекомендацию
+D --> API : Строки потребности и входные версии
+API --> UI : recommendationId и строки расчёта
+UI --> M : Показать потребность и состояние данных
+alt Менеджер продолжает к утверждению
+ M -> UI : Заново подтвердить доступный\nостаток своего склада
+ UI -> API : POST own-stock-snapshots
+ API -> D : Сохранить новый снимок и автора
+ D --> API : ownStockSnapshotId
+ API --> UI : Подтверждённый снимок
+ UI -> API : POST allocation-proposals\nrecommendationId + ownStockSnapshotId
+ API -> D : Прочитать входные версии
+ D --> API : Строки потребности и снимок\nдоступного остатка
+ API -> API : Рассчитать пропорциональное распределение\nи недостающий объём
+ API -> D : Сохранить предложение и версию метода
+ D --> API : allocationProposalId
+ API --> UI : Предложенные отгрузки\nи отдельный объём закупки
+ UI --> M : Показать исходное предложение
+ M -> UI : Принять или изменить количества;\nотправить на утверждение
+ UI -> API : POST decisions · action=approve
+ API -> D : Проверить версии, новое подтверждение\nи отсутствие прежнего утверждения
+ D --> API : Результат проверки состояния
+ API -> API : Проверить целые неотрицательные количества;\nсумма отгрузок <= подтверждённого остатка
+ alt Проверки пройдены
+  API -> D : В одной транзакции сохранить решение;\nсоздать планы для положительных количеств
+  D --> API : decisionId
+  API --> UI : 201 · approved; планы или null
+  UI --> M : Показать сохранённое решение
+ else Превышен остаток, снимок уже использован или есть иной блокер
+  API --> UI : 409 / 422 · код и причина
+  UI --> M : Показать причину; запросить исправление
+ end
+else Менеджер отклоняет рекомендацию
+ M -> UI : Указать причину отказа
+ UI -> API : POST decisions · action=reject
+ API -> D : Сохранить отказ без планов
+ D --> API : decisionId
+ API --> UI : 201 · rejected
+ UI --> M : Показать сохранённый отказ
+end
+@enduml

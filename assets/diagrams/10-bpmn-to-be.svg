@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1660" height="675" viewBox="0 0 1660 675"><rect data-background="white" x="0" y="0" width="100%" height="100%" fill="#ffffff"/>
+<defs><marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#45566f"/></marker><marker id="message" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#45566f" stroke-width="1.3"/></marker></defs>
+<rect width="1660" height="675" fill="white"/>
+<text x="35" y="32.0" text-anchor="start" font-family="Segoe UI,Arial,sans-serif" font-size="23" font-weight="bold" fill="#22344c">TO-BE · от рекомендации к решению менеджера</text>
+<rect x="60" y="65" width="1570" height="220" fill="#f5f8fc" stroke="#a8b7c9"/>
+<text transform="translate(80,175.0) rotate(-90)" text-anchor="middle" font-family="Segoe UI,Arial" font-size="14" fill="#22344c">Менеджер селлера</text>
+<rect x="60" y="285" width="1570" height="350" fill="#f3f8f5" stroke="#a8b7c9"/>
+<text transform="translate(80,460.0) rotate(-90)" text-anchor="middle" font-family="Segoe UI,Arial" font-size="14" fill="#22344c">StockFlow · автоматические действия</text>
+<rect x="30" y="65" width="30" height="570" fill="#e7edf5" stroke="#a8b7c9"/>
+<text transform="translate(49,350.0) rotate(-90)" text-anchor="middle" font-family="Segoe UI,Arial" font-size="14" fill="#22344c">Подготовка подсорта</text>
+<polyline points="152,180 160,180" fill="none" stroke="#45566f" stroke-width="1.6" marker-end="url(#arrow)"/>
+<polyline points="300,180 325,180" fill="none" stroke="#45566f" stroke-width="1.6" marker-end="url(#arrow)"/>
+<polyline points="373,180 420,180" fill="none" stroke="#45566f" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="382" y="165.0" text-anchor="start" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="normal" fill="#22344c">да</text>
+<polyline points="349,204 349,477 420,477" fill="none" stroke="#45566f" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="360" y="430.0" text-anchor="start" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="normal" fill="#22344c">нет: причина отказа</text>
+<polyline points="560,477 650,477" fill="none" stroke="#45566f" stroke-width="1.6" marker-end="url(#arrow)"/>
+<polyline points="560,180 578,180 578,382 595,382" fill="none" stroke="#45566f" stroke-width="1.6" marker-end="url(#arrow)"/>
+<polyline points="735,382 758,382 758,180 790,180" fill="none" stroke="#45566f" stroke-width="1.6" marker-end="url(#arrow)"/>
+<polyline points="1300,382 1325,382" fill="none" stroke="#45566f" stroke-width="1.6" marker-end="url(#arrow)"/>
+<polyline points="1373,382 1425,382" fill="none" stroke="#45566f" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="1385" y="366.0" text-anchor="start" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="normal" fill="#22344c">да</text>
+<polyline points="1565,382 1580,382" fill="none" stroke="#45566f" stroke-width="1.6" marker-end="url(#arrow)"/>
+<polyline points="1349,406 1349,580 90,580 90,105 490,105 490,143" fill="none" stroke="#45566f" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="760" y="602.0" text-anchor="start" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="normal" fill="#22344c">нет: исправить данные / подтвердить заново</text>
+<polyline points="930,180 1015,180" fill="none" stroke="#45566f" stroke-width="1.6" marker-end="url(#arrow)"/>
+<polyline points="1063,180 1140,180 1140,382 1160,382" fill="none" stroke="#45566f" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="1070" y="165.0" text-anchor="start" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="normal" fill="#22344c">да</text>
+<polyline points="1039,204 1039,555 490,555 490,514" fill="none" stroke="#45566f" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="770" y="568.0" text-anchor="start" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="normal" fill="#22344c">нет: причина отказа</text>
+<circle cx="136.0" cy="180.0" r="16.0" fill="white" stroke="#45566f" stroke-width="1.7"/>
+<text x="136.0" y="227.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="normal" fill="#22344c">Рекомендация</text>
+<text x="136.0" y="245.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="normal" fill="#22344c">готова</text>
+<rect x="160" y="143" width="140" height="74" rx="7" fill="white" stroke="#45566f" stroke-width="1.8"/>
+<circle cx="175" cy="151" r="3" fill="none" stroke="#45566f"/><path d="M169,164 Q175,155 181,164" fill="none" stroke="#45566f"/>
+<text x="230.0" y="178.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12.5" font-weight="normal" fill="#22344c">Просмотреть</text>
+<text x="230.0" y="196.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12.5" font-weight="normal" fill="#22344c">потребность</text>
+<text x="230.0" y="214.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12.5" font-weight="normal" fill="#22344c">и состояние данных</text>
+<path d="M349.0,156 L373,180.0 L349.0,204 L325,180.0 Z" fill="white" stroke="#45566f" stroke-width="1.8"/>
+<path d="M341.0,172.0 L357.0,188.0 M357.0,172.0 L341.0,188.0" stroke="#45566f" stroke-width="2"/>
+<text x="349.0" y="138.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="normal" fill="#22344c">Продолжить?</text>
+<rect x="420" y="143" width="140" height="74" rx="7" fill="white" stroke="#45566f" stroke-width="1.8"/>
+<circle cx="435" cy="151" r="3" fill="none" stroke="#45566f"/><path d="M429,164 Q435,155 441,164" fill="none" stroke="#45566f"/>
+<text x="490.0" y="187.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12.5" font-weight="normal" fill="#22344c">Заново подтвердить</text>
+<text x="490.0" y="205.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12.5" font-weight="normal" fill="#22344c">свой остаток</text>
+<rect x="595" y="345" width="140" height="74" rx="7" fill="white" stroke="#45566f" stroke-width="1.8"/>
+<circle cx="608" cy="355" r="6" fill="none" stroke="#45566f"/><circle cx="608" cy="355" r="2.5" fill="none" stroke="#45566f"/>
+<path d="M608.0,349.4 L608,347" stroke="#45566f"/>
+<path d="M608.0,360.6 L608,363" stroke="#45566f"/>
+<path d="M602.4,355.0 L600,355" stroke="#45566f"/>
+<path d="M613.6,355.0 L616,355" stroke="#45566f"/>
+<text x="665.0" y="380.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12.5" font-weight="normal" fill="#22344c">Предложить</text>
+<text x="665.0" y="398.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12.5" font-weight="normal" fill="#22344c">распределение</text>
+<text x="665.0" y="416.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12.5" font-weight="normal" fill="#22344c">и объём закупки</text>
+<rect x="790" y="143" width="140" height="74" rx="7" fill="white" stroke="#45566f" stroke-width="1.8"/>
+<circle cx="805" cy="151" r="3" fill="none" stroke="#45566f"/><path d="M799,164 Q805,155 811,164" fill="none" stroke="#45566f"/>
+<text x="860.0" y="178.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12.5" font-weight="normal" fill="#22344c">Проверить /</text>
+<text x="860.0" y="196.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12.5" font-weight="normal" fill="#22344c">изменить</text>
+<text x="860.0" y="214.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12.5" font-weight="normal" fill="#22344c">и выбрать решение</text>
+<rect x="1160" y="345" width="140" height="74" rx="7" fill="white" stroke="#45566f" stroke-width="1.8"/>
+<circle cx="1173" cy="355" r="6" fill="none" stroke="#45566f"/><circle cx="1173" cy="355" r="2.5" fill="none" stroke="#45566f"/>
+<path d="M1173.0,349.4 L1173,347" stroke="#45566f"/>
+<path d="M1173.0,360.6 L1173,363" stroke="#45566f"/>
+<path d="M1167.4,355.0 L1165,355" stroke="#45566f"/>
+<path d="M1178.6,355.0 L1181,355" stroke="#45566f"/>
+<text x="1230.0" y="380.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12.5" font-weight="normal" fill="#22344c">Проверить новый</text>
+<text x="1230.0" y="398.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12.5" font-weight="normal" fill="#22344c">снимок</text>
+<text x="1230.0" y="416.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12.5" font-weight="normal" fill="#22344c">и лимит отгрузки</text>
+<path d="M1349.0,358 L1373,382.0 L1349.0,406 L1325,382.0 Z" fill="white" stroke="#45566f" stroke-width="1.8"/>
+<path d="M1341.0,374.0 L1357.0,390.0 M1357.0,374.0 L1341.0,390.0" stroke="#45566f" stroke-width="2"/>
+<text x="1349.0" y="340.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="normal" fill="#22344c">Проверки пройдены?</text>
+<rect x="1425" y="345" width="140" height="74" rx="7" fill="white" stroke="#45566f" stroke-width="1.8"/>
+<circle cx="1438" cy="355" r="6" fill="none" stroke="#45566f"/><circle cx="1438" cy="355" r="2.5" fill="none" stroke="#45566f"/>
+<path d="M1438.0,349.4 L1438,347" stroke="#45566f"/>
+<path d="M1438.0,360.6 L1438,363" stroke="#45566f"/>
+<path d="M1432.4,355.0 L1430,355" stroke="#45566f"/>
+<path d="M1443.6,355.0 L1446,355" stroke="#45566f"/>
+<text x="1495.0" y="389.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12.5" font-weight="normal" fill="#22344c">Сохранить решение</text>
+<text x="1495.0" y="407.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12.5" font-weight="normal" fill="#22344c">и отдельные планы</text>
+<circle cx="1596.0" cy="382.0" r="16.0" fill="white" stroke="#45566f" stroke-width="3.4"/>
+<text x="1596.0" y="429.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="normal" fill="#22344c">Планы</text>
+<text x="1596.0" y="447.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="normal" fill="#22344c">сохранены</text>
+<rect x="420" y="440" width="140" height="74" rx="7" fill="white" stroke="#45566f" stroke-width="1.8"/>
+<circle cx="433" cy="450" r="6" fill="none" stroke="#45566f"/><circle cx="433" cy="450" r="2.5" fill="none" stroke="#45566f"/>
+<path d="M433.0,444.4 L433,442" stroke="#45566f"/>
+<path d="M433.0,455.6 L433,458" stroke="#45566f"/>
+<path d="M427.4,450.0 L425,450" stroke="#45566f"/>
+<path d="M438.6,450.0 L441,450" stroke="#45566f"/>
+<text x="490.0" y="484.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12.5" font-weight="normal" fill="#22344c">Сохранить отказ</text>
+<text x="490.0" y="502.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12.5" font-weight="normal" fill="#22344c">без планов</text>
+<circle cx="666.0" cy="477.0" r="16.0" fill="white" stroke="#45566f" stroke-width="3.4"/>
+<text x="666.0" y="533.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="normal" fill="#22344c">Отказ сохранён</text>
+<path d="M1039.0,156 L1063,180.0 L1039.0,204 L1015,180.0 Z" fill="white" stroke="#45566f" stroke-width="1.8"/>
+<path d="M1031.0,172.0 L1047.0,188.0 M1047.0,172.0 L1031.0,188.0" stroke="#45566f" stroke-width="2"/>
+<text x="1039.0" y="138.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="normal" fill="#22344c">Утвердить?</text>
+</svg>

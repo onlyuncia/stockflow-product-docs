@@ -1,0 +1,36 @@
+@startuml
+skinparam backgroundColor white
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 15
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam ArrowColor #45566F
+skinparam LineColor #45566F
+skinparam NoteBackgroundColor #FFF5DB
+skinparam NoteBorderColor #C5A659
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+skinparam monochrome false
+skinparam dpi 160
+
+title StockFlow · варианты использования
+left to right direction
+actor "Менеджер селлера" as M
+actor "API площадок" as MP
+rectangle StockFlow {
+ usecase "Автоматически обновить\nпродажи и остатки" as SYNC
+ usecase "Просмотреть потребность\nи состояние данных" as VIEW
+ usecase "Заново подтвердить\nдоступный свой остаток" as CONFIRM
+ usecase "Рассмотреть предложение\nи задать итоговые количества" as EDIT
+ usecase "Утвердить количества\nотгрузки и закупки" as APPROVE
+ usecase "Отклонить рекомендацию\nс указанием причины" as REJECT
+ usecase "Просмотреть историю\nпредложений и решений" as HISTORY
+}
+MP -- SYNC
+M -- VIEW
+M -- CONFIRM
+M -- EDIT
+M -- APPROVE
+M -- REJECT
+M -- HISTORY
+@enduml

@@ -1,0 +1,135 @@
+<?xml version='1.0' encoding='utf-8'?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Defs_09-bpmn-as-is" targetNamespace="https://stockflow.example/diagrams">
+  <bpmn:process id="Process_09-bpmn-as-is" isExecutable="false">
+    <bpmn:laneSet id="Lanes_09-bpmn-as-is">
+      <bpmn:lane id="Manager" name="Консультант / менеджер">
+        <bpmn:flowNodeRef>Start</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Export</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Own</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Adjust</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Send</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="ExcelLane" name="Рабочая книга Excel">
+        <bpmn:flowNodeRef>Excel</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Start" name="Нужен подсорт">
+      <bpmn:outgoing>F1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Export" name="Получить продажи&#10;и остатки из кабинетов">
+      <bpmn:incoming>F1</bpmn:incoming>
+      <bpmn:outgoing>F2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Excel" name="Рассчитать потребность&#10;в рабочей книге">
+      <bpmn:incoming>F2</bpmn:incoming>
+      <bpmn:outgoing>F3</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Own" name="Сверить свой остаток&#10;по учёту селлера">
+      <bpmn:incoming>F3</bpmn:incoming>
+      <bpmn:outgoing>F4</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Adjust" name="Скорректировать&#10;подсорт и закупку">
+      <bpmn:incoming>F4</bpmn:incoming>
+      <bpmn:outgoing>F5</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Send" name="Передать селлеру&#10;согласованные количества">
+      <bpmn:incoming>F5</bpmn:incoming>
+      <bpmn:outgoing>F6</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="End" name="План передан">
+      <bpmn:incoming>F6</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="F1" sourceRef="Start" targetRef="Export" name="" />
+    <bpmn:sequenceFlow id="F2" sourceRef="Export" targetRef="Excel" name="" />
+    <bpmn:sequenceFlow id="F3" sourceRef="Excel" targetRef="Own" name="" />
+    <bpmn:sequenceFlow id="F4" sourceRef="Own" targetRef="Adjust" name="" />
+    <bpmn:sequenceFlow id="F5" sourceRef="Adjust" targetRef="Send" name="" />
+    <bpmn:sequenceFlow id="F6" sourceRef="Send" targetRef="End" name="" />
+  </bpmn:process>
+  <bpmn:collaboration id="Collab_09-bpmn-as-is">
+    <bpmn:participant id="Pool_09-bpmn-as-is" name="Подготовка подсорта" processRef="Process_09-bpmn-as-is" />
+    <bpmn:participant id="Marketplace" name="Личные кабинеты маркетплейсов · ручная выгрузка" />
+    <bpmn:messageFlow id="M1" sourceRef="Export" targetRef="Marketplace" name="Запрос выгрузок" />
+    <bpmn:messageFlow id="M2" sourceRef="Marketplace" targetRef="Export" name="Продажи и остатки" />
+  </bpmn:collaboration>
+  <bpmndi:BPMNDiagram id="Diagram_09-bpmn-as-is">
+    <bpmndi:BPMNPlane id="Plane_09-bpmn-as-is" bpmnElement="Collab_09-bpmn-as-is">
+      <bpmndi:BPMNShape id="Pool_09-bpmn-as-is_di" bpmnElement="Pool_09-bpmn-as-is" isHorizontal="true">
+        <dc:Bounds x="30" y="65" width="1600" height="395" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Manager_di" bpmnElement="Manager" isHorizontal="true">
+        <dc:Bounds x="60" y="65" width="1570" height="210" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ExcelLane_di" bpmnElement="ExcelLane" isHorizontal="true">
+        <dc:Bounds x="60" y="275" width="1570" height="185" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_di" bpmnElement="Start">
+        <dc:Bounds x="100" y="155" width="32" height="32" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Export_di" bpmnElement="Export">
+        <dc:Bounds x="175" y="134" width="140" height="74" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Excel_di" bpmnElement="Excel">
+        <dc:Bounds x="390" y="325" width="140" height="74" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Own_di" bpmnElement="Own">
+        <dc:Bounds x="610" y="134" width="140" height="74" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Adjust_di" bpmnElement="Adjust">
+        <dc:Bounds x="835" y="134" width="140" height="74" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Send_di" bpmnElement="Send">
+        <dc:Bounds x="1070" y="134" width="140" height="74" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_di" bpmnElement="End">
+        <dc:Bounds x="1310" y="155" width="32" height="32" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Marketplace_di" bpmnElement="Marketplace" isHorizontal="true">
+        <dc:Bounds x="30" y="510" width="1600" height="65" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="F1_di" bpmnElement="F1">
+        <di:waypoint x="132" y="171" />
+        <di:waypoint x="175" y="171" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F2_di" bpmnElement="F2">
+        <di:waypoint x="315" y="171" />
+        <di:waypoint x="355" y="171" />
+        <di:waypoint x="355" y="362" />
+        <di:waypoint x="390" y="362" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F3_di" bpmnElement="F3">
+        <di:waypoint x="530" y="362" />
+        <di:waypoint x="570" y="362" />
+        <di:waypoint x="570" y="171" />
+        <di:waypoint x="610" y="171" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F4_di" bpmnElement="F4">
+        <di:waypoint x="750" y="171" />
+        <di:waypoint x="835" y="171" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F5_di" bpmnElement="F5">
+        <di:waypoint x="975" y="171" />
+        <di:waypoint x="1070" y="171" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F6_di" bpmnElement="F6">
+        <di:waypoint x="1210" y="171" />
+        <di:waypoint x="1310" y="171" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="M1_di" bpmnElement="M1">
+        <di:waypoint x="215" y="208" />
+        <di:waypoint x="215" y="510" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="225" y="462" width="240" height="32" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="M2_di" bpmnElement="M2">
+        <di:waypoint x="275" y="510" />
+        <di:waypoint x="275" y="208" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="285" y="430" width="240" height="32" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

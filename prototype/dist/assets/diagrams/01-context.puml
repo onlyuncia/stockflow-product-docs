@@ -1,0 +1,29 @@
+@startuml
+!include <C4/C4_Context>
+
+LAYOUT_TOP_DOWN()
+UpdateLegendTitle("Легенда")
+UpdateElementStyle("person", $legendText="Пользователь")
+UpdateElementStyle("system", $legendText="Система StockFlow")
+UpdateElementStyle("external_system", $legendText="Внешняя система")
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 15
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam dpi 150
+
+title C4 · уровень 1 · Контекст системы StockFlow
+
+Person(manager, "Менеджер селлера", "Просматривает потребность, подтверждает по учёту селлера доступный свой остаток и принимает решение.")
+System(stockflow, "StockFlow", "Бэкофис подсорта: рассчитывает рекомендации, предлагает распределение и сохраняет решения и планы.")
+System_Ext(ozon, "Ozon", "Внешняя система маркетплейса. Источник продаж и остатков подключённых кабинетов.")
+System_Ext(wb, "Wildberries", "Внешняя система маркетплейса. Источник продаж и остатков подключённых кабинетов.")
+
+Rel_D(manager, stockflow, "Просматривает расчёт, подтверждает остаток, утверждает или отклоняет предложение")
+Rel_D(stockflow, ozon, "Автоматически запрашивает продажи и остатки через API")
+Rel_D(stockflow, wb, "Автоматически запрашивает продажи и остатки через API")
+Lay_R(ozon, wb)
+
+SHOW_LEGEND($hideStereotype="false")
+@enduml
+

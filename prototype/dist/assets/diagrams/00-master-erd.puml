@@ -1,0 +1,141 @@
+@startuml
+title StockFlow · Master ERD\nОбзор реляционной модели PostgreSQL
+skinparam backgroundColor white
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam ArrowColor #45566F
+skinparam LineColor #45566F
+skinparam packageStyle rectangle
+skinparam dpi 150
+hide circle
+left to right direction
+skinparam linetype ortho
+package "Селлер и товары" as seller_context #E6EEF8 {
+  entity "Селлер\nSeller" as Seller {
+    * sellerId
+  }
+  entity "Кабинет площадки\nMarketplaceAccount" as MarketplaceAccount {
+    * accountId
+    sellerId · FK
+  }
+  entity "Внутренний товар\nProduct" as Product {
+    * productId
+    sellerId · FK
+  }
+  entity "Товар площадки\nListing" as Listing {
+    * listingId
+    accountId · FK
+    productId · FK · NULL
+  }
+}
+package "Входные данные" as input_data #E5F2ED {
+  entity "Обновление\nSyncRun" as SyncRun {
+    * syncRunId
+    accountId · FK
+  }
+  entity "Снимок продаж\nSalesSnapshot" as SalesSnapshot {
+    * salesSnapshotId
+    syncRunId · FK
+    listingId · FK
+  }
+  entity "Снимок остатка площадки\nMarketplaceStockSnapshot" as MarketplaceStockSnapshot {
+    * stockSnapshotId
+    syncRunId · FK
+    listingId · FK
+  }
+  entity "Снимок своего склада\nOwnStockSnapshot" as OwnStockSnapshot {
+    * ownStockSnapshotId
+    productId · FK
+  }
+}
+package "Правила и рекомендация" as calculation #FFF2D9 {
+  entity "Версия правила\nRuleVersion" as RuleVersion {
+    * ruleVersionId
+    sellerId · FK
+  }
+  entity "Рекомендация\nRecommendation" as Recommendation {
+    * recommendationId
+    productId · FK
+  }
+  entity "Позиция рекомендации\nRecommendationLine" as RecommendationLine {
+    * recommendationId · FK
+    * listingId · FK
+    sourceSalesSnapshotId · FK · NULL
+    sourceStockSnapshotId · FK · NULL
+    ruleVersionId · FK · NULL
+  }
+}
+package "Распределение" as allocation #EEE8F6 {
+  entity "Предложение распределения\nAllocationProposal" as AllocationProposal {
+    * allocationProposalId
+    recommendationId · FK
+    ownStockSnapshotId · FK
+  }
+  entity "Позиция распределения\nAllocationLine" as AllocationLine {
+    * allocationProposalId · FK
+    * listingId · FK
+  }
+}
+package "Решение и планы" as decisions_plans #E5F1F5 {
+  entity "Решение менеджера\nManagerDecision" as ManagerDecision {
+    * decisionId
+    recommendationId · FK
+    allocationProposalId · FK · NULL
+    ownStockSnapshotId · FK · NULL
+  }
+  entity "План отгрузки\nShipmentPlan" as ShipmentPlan {
+    * shipmentPlanId
+    decisionId · FK
+  }
+  entity "Позиция отгрузки\nShipmentPlanLine" as ShipmentPlanLine {
+    * shipmentPlanId · FK
+    * listingId · FK
+  }
+  entity "План закупки\nPurchasePlan" as PurchasePlan {
+    * purchasePlanId
+    decisionId · FK
+  }
+  entity "Позиция закупки\nPurchasePlanLine" as PurchasePlanLine {
+    * purchasePlanId · FK
+    * productId · FK
+  }
+}
+Seller ||--o{ MarketplaceAccount
+Seller ||--o{ Product
+MarketplaceAccount ||--o{ Listing
+Product |o--o{ Listing
+MarketplaceAccount ||--o{ SyncRun
+SyncRun ||--o{ SalesSnapshot
+Listing ||--o{ SalesSnapshot
+SyncRun ||--o{ MarketplaceStockSnapshot
+Listing ||--o{ MarketplaceStockSnapshot
+Seller ||--o{ RuleVersion
+Product ||--o{ Recommendation
+Recommendation ||--o{ RecommendationLine
+Listing ||--o{ RecommendationLine
+SalesSnapshot |o--o{ RecommendationLine
+MarketplaceStockSnapshot |o--o{ RecommendationLine
+RuleVersion |o--o{ RecommendationLine
+Product ||--o{ OwnStockSnapshot
+Recommendation ||--o{ AllocationProposal
+OwnStockSnapshot ||--o{ AllocationProposal
+Recommendation ||--o| ManagerDecision
+AllocationProposal |o--o| ManagerDecision
+OwnStockSnapshot |o--o{ ManagerDecision
+ManagerDecision ||--o| ShipmentPlan
+ManagerDecision ||--o| PurchasePlan
+AllocationProposal ||--o{ AllocationLine
+Listing ||--o{ AllocationLine
+ShipmentPlan ||--o{ ShipmentPlanLine
+Listing ||--o{ ShipmentPlanLine
+PurchasePlan ||--o{ PurchasePlanLine
+Product ||--o{ PurchasePlanLine
+legend bottom
+  18 таблиц · 30 связей · PostgreSQL
+  * — первичный ключ; FK — внешний ключ; NULL — необязательное значение.
+  На связях: кружок — необязательность, черта — один, разветвление — много.
+  На обзоре показаны только ключи; все поля и ограничения — в master DBML.
+  Цветные группы помогают читать одну базу и не обозначают отдельные СУБД.
+endlegend
+@enduml

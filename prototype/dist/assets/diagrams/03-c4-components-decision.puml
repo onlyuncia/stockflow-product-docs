@@ -1,0 +1,40 @@
+@startuml
+!include <C4/C4_Component>
+LAYOUT_TOP_DOWN()
+UpdateLegendTitle("Легенда")
+UpdateElementStyle("container", $legendText="Контейнер StockFlow")
+UpdateElementStyle("component", $legendText="Компонент сервера")
+UpdateElementStyle("external_system", $legendText="Внешняя система")
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 15
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam dpi 120
+
+title C4 · уровень 3 · Решение менеджера в StockFlow
+
+Container(web, "Веб-приложение", "Браузер", "Интерфейс менеджера.")
+Container_Boundary(backend, "Серверное приложение StockFlow") {
+ Component(api, "HTTP API", "HTTP/JSON", "Проверяет область селлера; принимает команды и возвращает расчёт и историю.")
+ Component(own, "Подтверждение своего остатка", "Модуль сервера", "Сохраняет количество, источник и автора нового подтверждения.")
+ Component(allocation, "Распределение", "Модуль сервера", "Предлагает пропорциональное распределение целых штук и отдельную закупку.")
+ Component(decision, "Решения и планы", "Модуль сервера", "Проверяет новое подтверждение и лимит. Сохраняет утверждение с планами либо отказ без планов.")
+ Component(data, "Доступ к снимкам и истории", "Модуль сервера", "Читает и сохраняет предметные данные и версии.")
+}
+ContainerDb(db, "База данных", "PostgreSQL", "Предметные данные и история.")
+
+Rel_D(web, api, "Читает данные и передаёт команды", "HTTP/JSON")
+Rel_D(api, own, "Передаёт новое подтверждение")
+Rel_D(api, allocation, "Запрашивает предложение")
+Rel_D(api, decision, "Передаёт утверждение или отказ")
+Rel(api, data, "Читает рекомендации, планы и историю")
+Rel_D(own, data, "Сохраняет новый снимок")
+Rel_D(allocation, data, "Читает входные версии; сохраняет предложение")
+Rel_D(decision, data, "Проверяет состояние; сохраняет решение и планы")
+Rel_D(data, db, "Читает и сохраняет данные", "SQL")
+Lay_R(own, allocation)
+Lay_R(allocation, decision)
+
+SHOW_LEGEND($hideStereotype="false")
+@enduml
+

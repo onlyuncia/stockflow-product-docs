@@ -1,0 +1,73 @@
+<!doctype html><html lang="ru" class="dark" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Правила расчёта — документы и схемы StockFlow."><link rel="icon" href="../assets/favicon.svg?v=2"><meta name="theme-color" content="#080b12"><title>Правила расчёта · StockFlow</title><script src="../theme.js?v=1"></script><link rel="stylesheet" href="../assets/vendor/heroui/heroui.min.css"><link rel="stylesheet" href="../styles.css?v=8"><link rel="stylesheet" href="../theme.css?v=2"><script src="../documents.js?v=2" defer></script></head><body><a class="skip" href="#main">К содержанию</a><header class="site-header"><div class="wrap header-row"><a class="brand" href="../index.html"><svg class="logo" viewBox="0 0 40 40" aria-hidden="true" focusable="false"><rect x="1" y="1" width="38" height="38" rx="8" fill="var(--raised)" stroke="currentColor" stroke-width="1.2"/><path d="M10 10H30V14H10ZM10 18H22V22H10ZM10 26H26V30H10Z" fill="currentColor"/></svg>StockFlow<span class="brand-sub">/ кейс</span></a><nav aria-label="Основная навигация"><a href="../index.html#context">Контекст</a><a href="../documents.html">Документы</a><a href="../diagrams.html">Схемы</a></nav><div class="header-actions"><button type="button" class="theme-toggle button button--secondary button--sm" data-theme-toggle aria-label="Включить светлую тему"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/></svg><span>Светлая</span></button><a class="button small outline button--secondary button--sm" href="../index.html#prototype">К прототипу ↗</a></div></div></header><main id="main"><section class="page-hero"><div class="wrap"><a class="back-link" href="../documents.html">← Все документы</a><p class="kicker">Документация StockFlow / 02</p><h1>Правила расчёта</h1><p class="lead">Темп продаж, целевой запас и распределение дефицита.</p><div class="document-tools"><a href="../source/docs/02-CALCULATION-RULES.md" download>Скачать исходник ↓</a><a href="../index.html#prototype">Проверить сценарий в прототипе ↗</a></div></div></section><div class="wrap document-layout"><aside class="document-nav" aria-label="Документы кейса"><a class="" href="01-process-as-is-to-be.html" >Процесс до и после</a><a class="active" href="02-calculation-rules.html" aria-current="page">Правила расчёта</a><a class="" href="03-functional-requirements.html" >Функциональные требования</a><a class="" href="04-use-case.html" >Сквозной сценарий</a><a class="" href="05-acceptance-criteria.html" >Критерии приёмки</a><a class="" href="06-architecture.html" >Архитектура C4</a><a class="" href="07-data-model.html" >Модель PostgreSQL</a><a class="" href="08-api-contract.html" >Контракт взаимодействия</a><a class="" href="09-openapi.html" >OpenAPI 3.1</a><a class="" href="10-diagrams.html" >Каталог диаграмм</a><a class="" href="11-stakeholders.html" >Участники процесса</a><a class="" href="12-constraints-dependencies.html" >Ограничения и зависимости</a><a class="" href="13-risks-mitigation.html" >Риски и меры снижения</a><a class="" href="14-results.html" >Результаты и наблюдения</a><a class="" href="15-project-success.html" >Критерии успеха</a><a class="" href="16-expansion-plans.html" >Направления расширения</a><a class="" href="17-non-functional-requirements.html" >Нефункциональные требования</a><a class="" href="18-backend-logic.html" >Backend-логика</a><a class="" href="case-stockflow.html" >Единый кейс</a></aside><article class="document-body"><span id="правила-подсорта-в-бэкофис-системе-stockflow" class="document-title-anchor"></span>
+<p>Исходная рабочая книга использовалась для подсорта товаров нескольких селлеров. Она не публикуется: в ней есть данные клиентов.</p>
+<h2 id="что-делали-до-stockflow">Что делали до StockFlow</h2>
+<p>Из личных кабинетов маркетплейсов получали продажи и остатки. Книга сопоставляла товар с выгрузками, суммировала продажи по неделям, переводила остаток площадки в дни покрытия и предлагала количество к пополнению. Для разных категорий и площадок использовали разные целевые сроки запаса. Итог корректировали коэффициентами и округляли.</p>
+<p>В основных листах книги стояло условное ограничение <code>9999</code>. Фактический остаток мы отдельно сверяли с системой или таблицей селлера.</p>
+<h2 id="как-правила-работали-в-сервисе">Как правила работали в сервисе</h2>
+<div class="doc-table-scroll"><table>
+<thead>
+<tr>
+<th>Правило</th>
+<th>Поведение StockFlow</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Источник данных площадок</td>
+<td>StockFlow автоматически получал продажи и остатки через API маркетплейсов, показывал время последнего обновления и ошибки синхронизации. Данные собственного склада поступали отдельно из учёта селлера.</td>
+</tr>
+<tr>
+<td>Темп продаж</td>
+<td>Менеджер видел продажи за выбранное окно и рассчитанный дневной темп рядом с предложением. При отсутствии данных количество не подменялось нулём без пояснения.</td>
+</tr>
+<tr>
+<td>Целевой запас</td>
+<td>Дни покрытия настраивались по селлеру, маркетплейсу и категории товара. В плане сохранялась использованная версия правила.</td>
+</tr>
+<tr>
+<td>Рекомендация площадке</td>
+<td>StockFlow показывал остаток на площадке, целевой запас и рекомендуемое пополнение по товару. Это значение не считалось доступным к отгрузке и не требовало обязательного утверждения.</td>
+</tr>
+<tr>
+<td>Свой склад</td>
+<td>Перед каждым утверждением менеджер заново подтверждал доступное количество из учёта селлера. Для предложения и решения сохранялся отдельный снимок; большое условное число из книги не использовалось как остаток.</td>
+</tr>
+<tr>
+<td>Дефицит</td>
+<td>Когда своего товара не хватало, сервис предлагал распределить доступное количество пропорционально рассчитанной потребности площадок. Менеджер мог изменить это распределение перед утверждением.</td>
+</tr>
+<tr>
+<td>Закупка</td>
+<td>Недостающий объём выводился отдельным предложением по заказу поставщику, а не прибавлялся к плану уже доступной отгрузки.</td>
+</tr>
+<tr>
+<td>Решение менеджера</td>
+<td>Менеджер мог принять рекомендацию, изменить количество или отклонить её по своей стратегии. Система сохраняла исходный расчёт и принятое решение; отклонение не создавало план отгрузки или закупки.</td>
+</tr>
+</tbody></table></div>
+<p>У снимка собственного склада не было фиксированного срока действия. Требовалось <strong>новое подтверждение менеджера для каждого утверждения</strong>: снимок, уже использованный в утверждённом плане, нельзя было повторно взять как подтверждение для следующего. StockFlow принимал доступное количество, которое менеджер сверил в учёте селлера.</p>
+<h2 id="расчёт-потребности-площадки">Расчёт потребности площадки</h2>
+<p>Для базового сценария без товара в пути и дополнительных коэффициентов:</p>
+<ul>
+<li><code>дневной темп = проданные единицы / число календарных дней окна</code>;</li>
+<li><code>целевой запас = дневной темп × целевые дни покрытия</code>, приведённый к целым штукам по <code>roundingPolicy</code> сохранённой версии правила;</li>
+<li><code>потребность = max(0, целевой запас − остаток площадки)</code>.</li>
+</ul>
+<p>Границы окна продаж включаются в расчёт: <code>число дней = periodEnd − periodStart + 1</code>. Подтверждённые нулевые продажи дают нулевую потребность; дни покрытия при нулевом темпе не вычисляются делением на ноль. Округление целевого запаса и распределение дефицита — разные правила: второе всегда использует метод наибольших дробных остатков.</p>
+<p><code>dataState</code> описывает наличие снимков продаж и остатка. Даже при <code>dataState: ready</code> расчёт невозможен без версии правила: тогда количество равно <code>null</code>, в <code>calculationIssue</code> указана причина, а вся рекомендация имеет статус <code>incomplete</code>. Такая рекомендация доступна для просмотра и отказа, но не для распределения и утверждения. Дополнительные коэффициенты, товар в пути и кратности отгрузки в описанный контракт не входят.</p>
+<h2 id="как-распределялся-дефицит">Как распределялся дефицит</h2>
+<p>Для одного внутреннего товара <code>потребность площадки</code> — это рассчитанная рекомендация до учёта собственного склада. Если доступного своего товара меньше суммарной потребности, StockFlow формировал <strong>начальное предложение</strong>, а не окончательный план:</p>
+<ol>
+<li>Для каждой площадки рассчитывал долю: <code>доступный остаток × потребность площадки / суммарная потребность</code>.</li>
+<li>Сначала брал целую часть каждой доли. Оставшиеся штуки по одной отдавал площадкам с наибольшей дробной частью. При равной дробной части использовал стабильный порядок идентификаторов товаров площадок, чтобы результат не зависел от порядка строк на экране.</li>
+<li>Недостающий объём показывал отдельно: <code>суммарная потребность − распределённое количество</code>. Он становился <strong>предложением по закупке</strong>, а не товаром для текущей отгрузки.</li>
+</ol>
+<p>Если своего товара хватает на всю потребность, предложение по отгрузке равно рассчитанной потребности каждой площадки, закупка по этому расчёту равна нулю, а лишний остаток остаётся на своём складе. При нулевой суммарной потребности отгрузка и предложенная закупка также равны нулю. При неполных данных площадки предложение распределения не формируется до устранения причины: отсутствие данных нельзя трактовать как нулевую потребность.</p>
+<p>Например, потребность Ozon — 9 шт., Wildberries — 34 шт., всего — 43 шт., а на своём складе доступно 30 шт. Доли составляют примерно 6,28 и 23,72 шт. После распределения последней целой штуки начальное предложение — <strong>6 шт. для Ozon и 24 шт. для Wildberries</strong>; ещё <strong>13 шт.</strong> показаны к закупке. Менеджер в <a href="04-use-case.html">сквозном сценарии</a> изменил предложение на 9 и 21 шт. перед утверждением. Сервис сохранил исходное предложение и итоговые количества менеджера отдельно.</p>
+<h2 id="что-не-переносили-из-книги-без-проверки">Что не переносили из книги без проверки</h2>
+<ul>
+<li>Значения целевого покрытия <code>45</code>, <code>75</code>, <code>80</code> и <code>90</code> дней встречались в проверенных листах Ozon и Wildberries. Они стали примером настроек, а не общим нормативом для всех селлеров.</li>
+<li>Множитель <code>0,2</code> встречался в части строк Ozon, но его смысл по повреждённым подписям нельзя подтвердить. StockFlow не применял неизвестный коэффициент скрыто.</li>
+<li>Старая формула округления могла дать <code>3</code> при расчётном количестве около <code>3,857</code>, несмотря на записанный порог <code>0,6</code>. В сервисе способ округления был отдельной видимой настройкой; ошибочную формулу не копировали.</li>
+</ul>
+<p>Таким образом, книга послужила источником задач и примеров, но не была техническим контрактом сервиса. Предложение StockFlow можно было проследить от данных API и настроек до решения менеджера — утверждения, изменения или отклонения.</p>
+</article></div></main><footer class="site-footer"><div class="wrap"><a class="brand" href="../index.html">StockFlow<span class="brand-sub">/ BA · SA</span></a><p>Мой кейс БА/СА. Прототип работает на вымышленных данных.</p><a href="../index.html#prototype">Попробовать сценарий ↗</a></div></footer><dialog class="image-dialog" id="image-dialog" aria-labelledby="image-title"><div class="dialog-head"><div><h2 id="image-title">Диаграмма</h2><div class="diagram-links"><a id="image-original" target="_blank" rel="noopener">Открыть полный размер ↗</a></div></div><button class="dialog-close" type="button" id="image-close" aria-label="Закрыть">×</button></div><div class="image-toolbar" role="group" aria-label="Масштаб диаграммы"><button type="button" id="image-zoom-out" aria-label="Уменьшить">−</button><output id="image-scale" aria-live="polite">100%</output><button type="button" id="image-zoom-in" aria-label="Увеличить">+</button><button type="button" id="image-fit">Вместить</button><button type="button" id="image-actual">100%</button></div><p class="image-help" id="image-help">Увеличьте схему и перемещайте её мышью или прокруткой. Клавиши + / − меняют масштаб.</p><div class="image-viewport" id="image-viewport" tabindex="0" role="region" aria-label="Область просмотра диаграммы" aria-describedby="image-help"><div class="image-canvas" id="image-canvas"><img id="image-full" alt="" draggable="false"></div></div></dialog></body></html>

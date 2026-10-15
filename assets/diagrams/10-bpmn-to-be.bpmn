@@ -1,0 +1,234 @@
+<?xml version='1.0' encoding='utf-8'?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Defs_10-bpmn-to-be" targetNamespace="https://stockflow.example/diagrams">
+  <bpmn:process id="Process_10-bpmn-to-be" isExecutable="false">
+    <bpmn:laneSet id="Lanes_10-bpmn-to-be">
+      <bpmn:lane id="Manager" name="Менеджер селлера">
+        <bpmn:flowNodeRef>Start</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>View</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Continue</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Confirm</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Review</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Choice</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Service" name="StockFlow · автоматические действия">
+        <bpmn:flowNodeRef>Allocate</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Validate</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Valid</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Save</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Reject</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Rejected</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Start" name="Рекомендация&#10;готова">
+      <bpmn:outgoing>F1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="View" name="Просмотреть потребность&#10;и состояние данных">
+      <bpmn:incoming>F1</bpmn:incoming>
+      <bpmn:outgoing>F2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Continue" name="Продолжить?">
+      <bpmn:incoming>F2</bpmn:incoming>
+      <bpmn:outgoing>F3</bpmn:outgoing>
+      <bpmn:outgoing>F4</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Confirm" name="Заново подтвердить&#10;свой остаток">
+      <bpmn:incoming>F3</bpmn:incoming>
+      <bpmn:outgoing>F6</bpmn:outgoing>
+      <bpmn:incoming>F13</bpmn:incoming>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Allocate" name="Предложить распределение&#10;и объём закупки">
+      <bpmn:incoming>F6</bpmn:incoming>
+      <bpmn:outgoing>F7</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Review" name="Проверить / изменить&#10;и выбрать решение">
+      <bpmn:incoming>F7</bpmn:incoming>
+      <bpmn:outgoing>F8</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Validate" name="Проверить новый снимок&#10;и лимит отгрузки">
+      <bpmn:outgoing>F10</bpmn:outgoing>
+      <bpmn:incoming>F9</bpmn:incoming>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Valid" name="Проверки пройдены?">
+      <bpmn:incoming>F10</bpmn:incoming>
+      <bpmn:outgoing>F11</bpmn:outgoing>
+      <bpmn:outgoing>F13</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="Save" name="Сохранить решение&#10;и отдельные планы">
+      <bpmn:incoming>F11</bpmn:incoming>
+      <bpmn:outgoing>F12</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="End" name="Планы&#10;сохранены">
+      <bpmn:incoming>F12</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="Reject" name="Сохранить отказ&#10;без планов">
+      <bpmn:incoming>F4</bpmn:incoming>
+      <bpmn:outgoing>F5</bpmn:outgoing>
+      <bpmn:incoming>F14</bpmn:incoming>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="Rejected" name="Отказ сохранён">
+      <bpmn:incoming>F5</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:exclusiveGateway id="Choice" name="Утвердить?">
+      <bpmn:incoming>F8</bpmn:incoming>
+      <bpmn:outgoing>F9</bpmn:outgoing>
+      <bpmn:outgoing>F14</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="F1" sourceRef="Start" targetRef="View" name="" />
+    <bpmn:sequenceFlow id="F2" sourceRef="View" targetRef="Continue" name="" />
+    <bpmn:sequenceFlow id="F3" sourceRef="Continue" targetRef="Confirm" name="да" />
+    <bpmn:sequenceFlow id="F4" sourceRef="Continue" targetRef="Reject" name="нет: причина отказа" />
+    <bpmn:sequenceFlow id="F5" sourceRef="Reject" targetRef="Rejected" name="" />
+    <bpmn:sequenceFlow id="F6" sourceRef="Confirm" targetRef="Allocate" name="" />
+    <bpmn:sequenceFlow id="F7" sourceRef="Allocate" targetRef="Review" name="" />
+    <bpmn:sequenceFlow id="F10" sourceRef="Validate" targetRef="Valid" name="" />
+    <bpmn:sequenceFlow id="F11" sourceRef="Valid" targetRef="Save" name="да" />
+    <bpmn:sequenceFlow id="F12" sourceRef="Save" targetRef="End" name="" />
+    <bpmn:sequenceFlow id="F13" sourceRef="Valid" targetRef="Confirm" name="нет: исправить данные / подтвердить заново" />
+    <bpmn:sequenceFlow id="F8" sourceRef="Review" targetRef="Choice" name="" />
+    <bpmn:sequenceFlow id="F9" sourceRef="Choice" targetRef="Validate" name="да" />
+    <bpmn:sequenceFlow id="F14" sourceRef="Choice" targetRef="Reject" name="нет: причина отказа" />
+  </bpmn:process>
+  <bpmn:collaboration id="Collab_10-bpmn-to-be">
+    <bpmn:participant id="Pool_10-bpmn-to-be" name="Подготовка подсорта" processRef="Process_10-bpmn-to-be" />
+  </bpmn:collaboration>
+  <bpmndi:BPMNDiagram id="Diagram_10-bpmn-to-be">
+    <bpmndi:BPMNPlane id="Plane_10-bpmn-to-be" bpmnElement="Collab_10-bpmn-to-be">
+      <bpmndi:BPMNShape id="Pool_10-bpmn-to-be_di" bpmnElement="Pool_10-bpmn-to-be" isHorizontal="true">
+        <dc:Bounds x="30" y="65" width="1600" height="570" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Manager_di" bpmnElement="Manager" isHorizontal="true">
+        <dc:Bounds x="60" y="65" width="1570" height="220" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Service_di" bpmnElement="Service" isHorizontal="true">
+        <dc:Bounds x="60" y="285" width="1570" height="350" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_di" bpmnElement="Start">
+        <dc:Bounds x="120" y="164" width="32" height="32" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="View_di" bpmnElement="View">
+        <dc:Bounds x="160" y="143" width="140" height="74" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Continue_di" bpmnElement="Continue">
+        <dc:Bounds x="325" y="156" width="48" height="48" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Confirm_di" bpmnElement="Confirm">
+        <dc:Bounds x="420" y="143" width="140" height="74" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Allocate_di" bpmnElement="Allocate">
+        <dc:Bounds x="595" y="345" width="140" height="74" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Review_di" bpmnElement="Review">
+        <dc:Bounds x="790" y="143" width="140" height="74" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Validate_di" bpmnElement="Validate">
+        <dc:Bounds x="1160" y="345" width="140" height="74" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Valid_di" bpmnElement="Valid">
+        <dc:Bounds x="1325" y="358" width="48" height="48" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Save_di" bpmnElement="Save">
+        <dc:Bounds x="1425" y="345" width="140" height="74" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_di" bpmnElement="End">
+        <dc:Bounds x="1580" y="366" width="32" height="32" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Reject_di" bpmnElement="Reject">
+        <dc:Bounds x="420" y="440" width="140" height="74" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Rejected_di" bpmnElement="Rejected">
+        <dc:Bounds x="650" y="461" width="32" height="32" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Choice_di" bpmnElement="Choice">
+        <dc:Bounds x="1015" y="156" width="48" height="48" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="F1_di" bpmnElement="F1">
+        <di:waypoint x="152" y="180" />
+        <di:waypoint x="160" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F2_di" bpmnElement="F2">
+        <di:waypoint x="300" y="180" />
+        <di:waypoint x="325" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F3_di" bpmnElement="F3">
+        <di:waypoint x="373" y="180" />
+        <di:waypoint x="420" y="180" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="382" y="165" width="240" height="32" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F4_di" bpmnElement="F4">
+        <di:waypoint x="349" y="204" />
+        <di:waypoint x="349" y="477" />
+        <di:waypoint x="420" y="477" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="360" y="430" width="240" height="32" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F5_di" bpmnElement="F5">
+        <di:waypoint x="560" y="477" />
+        <di:waypoint x="650" y="477" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F6_di" bpmnElement="F6">
+        <di:waypoint x="560" y="180" />
+        <di:waypoint x="578" y="180" />
+        <di:waypoint x="578" y="382" />
+        <di:waypoint x="595" y="382" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F7_di" bpmnElement="F7">
+        <di:waypoint x="735" y="382" />
+        <di:waypoint x="758" y="382" />
+        <di:waypoint x="758" y="180" />
+        <di:waypoint x="790" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F10_di" bpmnElement="F10">
+        <di:waypoint x="1300" y="382" />
+        <di:waypoint x="1325" y="382" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F11_di" bpmnElement="F11">
+        <di:waypoint x="1373" y="382" />
+        <di:waypoint x="1425" y="382" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1385" y="366" width="240" height="32" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F12_di" bpmnElement="F12">
+        <di:waypoint x="1565" y="382" />
+        <di:waypoint x="1580" y="382" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F13_di" bpmnElement="F13">
+        <di:waypoint x="1349" y="406" />
+        <di:waypoint x="1349" y="580" />
+        <di:waypoint x="90" y="580" />
+        <di:waypoint x="90" y="105" />
+        <di:waypoint x="490" y="105" />
+        <di:waypoint x="490" y="143" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="760" y="602" width="240" height="32" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F8_di" bpmnElement="F8">
+        <di:waypoint x="930" y="180" />
+        <di:waypoint x="1015" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F9_di" bpmnElement="F9">
+        <di:waypoint x="1063" y="180" />
+        <di:waypoint x="1140" y="180" />
+        <di:waypoint x="1140" y="382" />
+        <di:waypoint x="1160" y="382" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1070" y="165" width="240" height="32" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F14_di" bpmnElement="F14">
+        <di:waypoint x="1039" y="204" />
+        <di:waypoint x="1039" y="555" />
+        <di:waypoint x="490" y="555" />
+        <di:waypoint x="490" y="514" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="770" y="568" width="240" height="32" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

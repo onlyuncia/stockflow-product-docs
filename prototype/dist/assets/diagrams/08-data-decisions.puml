@@ -1,0 +1,116 @@
+@startuml
+skinparam backgroundColor white
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 14
+skinparam shadowing false
+skinparam ArrowColor #45566F
+skinparam LineColor #45566F
+skinparam NoteBackgroundColor #FFF5DB
+skinparam NoteBorderColor #C5A659
+skinparam dpi 150
+left to right direction
+hide circle
+title StockFlow · предложение, решение и планы\nРеляционная модель PostgreSQL
+entity "Внутренний товар\nProduct" as Product {
+* productId : text
+--
+internalSku : text
+}
+entity "Товар площадки\nListing" as Listing {
+* listingId : text
+--
+productId : text · NULL
+}
+entity "Рекомендация\nRecommendation" as Recommendation {
+* recommendationId : text
+--
+productId : text
+}
+entity "Снимок своего склада\nOwnStockSnapshot" as OwnStockSnapshot {
+* ownStockSnapshotId : text
+--
+productId : text
+availableUnits : integer
+sourceKind : text
+sourceLabel : text
+sourceObservedAt : timestamptz
+confirmedAt : timestamptz
+confirmedBy : text
+}
+entity "Предложение распределения\nAllocationProposal" as AllocationProposal {
+* allocationProposalId : text
+--
+recommendationId : text
+ownStockSnapshotId : text
+allocationMethod : text
+proposedPurchaseUnits : integer
+}
+entity "Позиция распределения\nAllocationLine" as AllocationLine {
+* allocationProposalId : text
+* listingId : text
+--
+proposedShipmentUnits : integer
+}
+entity "Решение менеджера\nManagerDecision" as ManagerDecision {
+* decisionId : text
+--
+recommendationId : text
+allocationProposalId : text · NULL
+ownStockSnapshotId : text · NULL
+status : text
+decidedBy : text
+decidedAt : timestamptz
+reason : text · NULL
+}
+entity "План отгрузки\nShipmentPlan" as ShipmentPlan {
+* shipmentPlanId : text
+--
+decisionId : text
+createdAt : timestamptz
+}
+entity "Позиция плана отгрузки\nShipmentPlanLine" as ShipmentPlanLine {
+* shipmentPlanId : text
+* listingId : text
+--
+approvedShipmentUnits : integer
+}
+entity "План закупки\nPurchasePlan" as PurchasePlan {
+* purchasePlanId : text
+--
+decisionId : text
+createdAt : timestamptz
+}
+entity "Позиция плана закупки\nPurchasePlanLine" as PurchasePlanLine {
+* purchasePlanId : text
+* productId : text
+--
+approvedPurchaseUnits : integer
+}
+Product "0..1" -- "0..*" Listing
+Product "1" -- "0..*" Recommendation
+Product "1" -- "0..*" OwnStockSnapshot
+Recommendation "1" -- "0..*" AllocationProposal
+OwnStockSnapshot "1" -- "0..*" AllocationProposal
+Recommendation "1" -- "0..1" ManagerDecision
+AllocationProposal "0..1" -- "0..1" ManagerDecision
+OwnStockSnapshot "0..1" -- "0..*" ManagerDecision
+ManagerDecision "1" -- "0..1" ShipmentPlan
+ManagerDecision "1" -- "0..1" PurchasePlan
+AllocationProposal "1" -- "0..*" AllocationLine
+Listing "1" -- "0..*" AllocationLine
+ShipmentPlan "1" -- "0..*" ShipmentPlanLine
+Listing "1" -- "0..*" ShipmentPlanLine
+PurchasePlan "1" -- "0..*" PurchasePlanLine
+Product "1" -- "0..*" PurchasePlanLine
+note bottom of ManagerDecision
+  Планы и позиции создаются в одной транзакции.
+  При отказе планов нет.
+  Один снимок подтверждает только одно утверждение.
+end note
+legend bottom
+  * — первичный ключ; у позиций ключ составной.
+  NULL — необязательное значение.
+  Позиции хранятся отдельно, но входят в свой бизнес-документ.
+  В API заголовок и позиции возвращаются вместе в объекте с lines.
+endlegend
+@enduml

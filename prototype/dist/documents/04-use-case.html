@@ -1,0 +1,124 @@
+<!doctype html><html lang="ru" class="dark" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Сквозной сценарий — документы и схемы StockFlow."><link rel="icon" href="../assets/favicon.svg?v=2"><meta name="theme-color" content="#080b12"><title>Сквозной сценарий · StockFlow</title><script src="../theme.js?v=1"></script><link rel="stylesheet" href="../assets/vendor/heroui/heroui.min.css"><link rel="stylesheet" href="../styles.css?v=8"><link rel="stylesheet" href="../theme.css?v=2"><script src="../documents.js?v=2" defer></script></head><body><a class="skip" href="#main">К содержанию</a><header class="site-header"><div class="wrap header-row"><a class="brand" href="../index.html"><svg class="logo" viewBox="0 0 40 40" aria-hidden="true" focusable="false"><rect x="1" y="1" width="38" height="38" rx="8" fill="var(--raised)" stroke="currentColor" stroke-width="1.2"/><path d="M10 10H30V14H10ZM10 18H22V22H10ZM10 26H26V30H10Z" fill="currentColor"/></svg>StockFlow<span class="brand-sub">/ кейс</span></a><nav aria-label="Основная навигация"><a href="../index.html#context">Контекст</a><a href="../documents.html">Документы</a><a href="../diagrams.html">Схемы</a></nav><div class="header-actions"><button type="button" class="theme-toggle button button--secondary button--sm" data-theme-toggle aria-label="Включить светлую тему"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/></svg><span>Светлая</span></button><a class="button small outline button--secondary button--sm" href="../index.html#prototype">К прототипу ↗</a></div></div></header><main id="main"><section class="page-hero"><div class="wrap"><a class="back-link" href="../documents.html">← Все документы</a><p class="kicker">Документация StockFlow / 04</p><h1>Сквозной сценарий</h1><p class="lead">Один товар: от рекомендации к решению и планам.</p><div class="document-tools"><a href="../source/docs/04-USE-CASE.md" download>Скачать исходник ↓</a><a href="../index.html#prototype">Проверить сценарий в прототипе ↗</a></div></div></section><div class="wrap document-layout"><aside class="document-nav" aria-label="Документы кейса"><a class="" href="01-process-as-is-to-be.html" >Процесс до и после</a><a class="" href="02-calculation-rules.html" >Правила расчёта</a><a class="" href="03-functional-requirements.html" >Функциональные требования</a><a class="active" href="04-use-case.html" aria-current="page">Сквозной сценарий</a><a class="" href="05-acceptance-criteria.html" >Критерии приёмки</a><a class="" href="06-architecture.html" >Архитектура C4</a><a class="" href="07-data-model.html" >Модель PostgreSQL</a><a class="" href="08-api-contract.html" >Контракт взаимодействия</a><a class="" href="09-openapi.html" >OpenAPI 3.1</a><a class="" href="10-diagrams.html" >Каталог диаграмм</a><a class="" href="11-stakeholders.html" >Участники процесса</a><a class="" href="12-constraints-dependencies.html" >Ограничения и зависимости</a><a class="" href="13-risks-mitigation.html" >Риски и меры снижения</a><a class="" href="14-results.html" >Результаты и наблюдения</a><a class="" href="15-project-success.html" >Критерии успеха</a><a class="" href="16-expansion-plans.html" >Направления расширения</a><a class="" href="17-non-functional-requirements.html" >Нефункциональные требования</a><a class="" href="18-backend-logic.html" >Backend-логика</a><a class="" href="case-stockflow.html" >Единый кейс</a></aside><article class="document-body"><span id="uc-01-от-рекомендации-по-подсорту-к-двум-планам" class="document-title-anchor"></span>
+<p>Сценарий показывает основной путь одного товара через StockFlow. Все артикулы и количества ниже <strong>синтетические</strong>: они объясняют поведение сервиса и не раскрывают данные селлеров из исходной книги.</p>
+<p><strong>Участники:</strong> менеджер селлера, бэкофис-система StockFlow, API подключённых маркетплейсов и источник учёта собственного склада селлера. Закупку у поставщика и поставки на площадки после утверждения выполняли вне StockFlow.</p>
+<h2 id="основной-путь">Основной путь</h2>
+<ol>
+<li>StockFlow автоматически получал продажи и остатки подключённых кабинетов через API площадок. Для каждого источника система показывала время и состояние последней синхронизации.</li>
+<li>Система сопоставляла идентификаторы площадок с внутренним товаром селлера. Строки без однозначного сопоставления не смешивались с другим товаром.</li>
+<li>По действующей версии правил StockFlow рассчитывал рекомендации для каждой площадки. Менеджер видел продажи, текущий остаток, целевое покрытие и объяснение предлагаемого количества.</li>
+<li>Перед утверждением менеджер заново подтверждал доступный остаток собственного склада из учётной системы или таблицы селлера. StockFlow сохранял отдельный снимок и показывал, какую часть суммарной потребности можно обеспечить сейчас, а какую предлагалось заказать у поставщика.</li>
+<li>Менеджер сопоставлял предложение со своей стратегией. Он мог принять количества, изменить их или отклонить рекомендацию. При изменении система проверяла, что суммарная текущая отгрузка не превышает подтверждённый остаток своего склада.</li>
+<li>После утверждения StockFlow сохранял исходную рекомендацию, изменения менеджера, использованные данные и версию правил. Утверждённые количества составляли отдельные планы отгрузки и закупки. Исполнение оставалось на стороне селлера.</li>
+</ol>
+<h2 id="пример-одного-товара">Пример одного товара</h2>
+<p>В примере у селлера один внутренний товар <code>SKU-DEMO-01</code>, сопоставленный с карточками Ozon и Wildberries. Для наглядности обеим площадкам задано целевое покрытие <strong>21 день</strong>, округление целевого запаса задано вверх до целой штуки (<code>roundingPolicy: ceil</code>), а товар в пути не учитывается. Это настройки <strong>данного примера</strong>, а не обязательные значения для всех клиентов.</p>
+<div class="doc-table-scroll"><table>
+<thead>
+<tr>
+<th>Площадка</th>
+<th align="right">Продажи за 28 дней</th>
+<th align="right">Средний темп</th>
+<th align="right">Остаток на площадке</th>
+<th align="right">Рекомендация до учёта своего склада</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Ozon</td>
+<td align="right">28 шт.</td>
+<td align="right">1 шт./день</td>
+<td align="right">12 шт.</td>
+<td align="right"><code>1 × 21 − 12 = 9 шт.</code></td>
+</tr>
+<tr>
+<td>Wildberries</td>
+<td align="right">56 шт.</td>
+<td align="right">2 шт./день</td>
+<td align="right">8 шт.</td>
+<td align="right"><code>2 × 21 − 8 = 34 шт.</code></td>
+</tr>
+<tr>
+<td><strong>Всего</strong></td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right"><strong>43 шт.</strong></td>
+</tr>
+</tbody></table></div>
+<p>На собственном складе селлера доступно <strong>30 шт.</strong> Полную рекомендацию в 43 шт. нельзя превратить в немедленную отгрузку: не хватает 13 шт. StockFlow сначала предлагал распределить 30 шт. пропорционально потребности. Доли <code>30 × 9 / 43 ≈ 6,28</code> и <code>30 × 34 / 43 ≈ 23,72</code> после распределения последней целой штуки дали <strong>6 шт. для Ozon</strong> и <strong>24 шт. для Wildberries</strong>.</p>
+<div class="doc-table-scroll"><table>
+<thead>
+<tr>
+<th>Площадка</th>
+<th align="right">Расчётная потребность</th>
+<th align="right">Начальное предложение StockFlow</th>
+<th align="right">Утвердил менеджер</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Ozon</td>
+<td align="right">9 шт.</td>
+<td align="right">6 шт.</td>
+<td align="right">9 шт.</td>
+</tr>
+<tr>
+<td>Wildberries</td>
+<td align="right">34 шт.</td>
+<td align="right">24 шт.</td>
+<td align="right">21 шт.</td>
+</tr>
+<tr>
+<td><strong>Всего</strong></td>
+<td align="right"><strong>43 шт.</strong></td>
+<td align="right"><strong>30 шт.</strong></td>
+<td align="right"><strong>30 шт.</strong></td>
+</tr>
+</tbody></table></div>
+<p>Менеджер изменил начальное предложение с 6/24 на <strong>9/21</strong>, исходя из своей стратегии. Он утвердил эти количества для отгрузки и отдельно включил <strong>13 шт.</strong> в план закупки для последующего пополнения. Сервис сохранил первоначальное предложение и его правку; закупленные 13 шт. не считались уже отправленными на площадку.</p>
+<h2 id="другие-исходы">Другие исходы</h2>
+<div class="doc-table-scroll"><table>
+<thead>
+<tr>
+<th>Условие или решение</th>
+<th>Поведение StockFlow</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Нет нового подтверждения остатка своего склада для этого решения</td>
+<td>Рекомендация площадкам видна, но исполнимую отгрузку и закупку утвердить нельзя. Фиксированного срока действия снимка нет; подтверждение из прежнего утверждения не переиспользуется.</td>
+</tr>
+<tr>
+<td>Нет данных площадки из-за ошибки API</td>
+<td>Ошибка синхронизации показана отдельно; отсутствие ответа не превращается в нулевые продажи или остаток.</td>
+</tr>
+<tr>
+<td>Товар площадки не сопоставлен с внутренним товаром</td>
+<td>Строка требует сопоставления и не прибавляется к запасу или спросу другого SKU.</td>
+</tr>
+<tr>
+<td>Менеджер предлагает отгрузить больше 30 шт.</td>
+<td>Система показывает превышение подтверждённого остатка и не даёт утвердить такой план.</td>
+</tr>
+<tr>
+<td>Менеджер не согласен с рекомендацией</td>
+<td>Он отклоняет её; отказ сохраняется, но план отгрузки или закупки не создаётся. Если предложение уже рассмотрено, решение сохраняет ссылку на него; ранний отказ обходится без подтверждения своего остатка.</td>
+</tr>
+<tr>
+<td>Нет версии правила при полученных данных площадок</td>
+<td>Количество не рассчитано, причина показана; распределение и утверждение заблокированы, отказ разрешён.</td>
+</tr>
+<tr>
+<td>Менеджер утверждает только закупку или только отгрузку</td>
+<td>Создаётся только план с положительным объёмом; второй план отсутствует. При обоих нулевых объёмах сохраняется решение без планов.</td>
+</tr>
+</tbody></table></div>
+<p>Рекомендация, решение менеджера и фактическое исполнение — разные события. Утверждение количества в StockFlow не подтверждает, что поставщик принял заказ или маркетплейс принял поставку.</p>
+<h2 id="визуальное-представление">Визуальное представление</h2>
+<h3 id="варианты-использования">Варианты использования</h3>
+<p><button class="diagram-preview doc-image" type="button" data-image="../assets/diagrams/02-use-cases.png" data-title="Варианты использования" aria-label="Увеличить: Варианты использования" style="height:auto;background:white"><img src="../assets/diagrams/02-use-cases.png" alt="Варианты использования" loading="lazy"></button></p>
+<p>Форматы: <a href="../assets/diagrams/02-use-cases.png">PNG</a> · <a href="../assets/diagrams/02-use-cases.svg">SVG</a> · <a href="../assets/diagrams/02-use-cases.puml">PlantUML</a>.</p>
+<p>Автоматическое получение данных площадок показано отдельным вариантом использования. Собственный остаток подтверждает менеджер по учёту селлера.</p>
+<h3 id="обработка-рекомендации-и-принятие-решения">Обработка рекомендации и принятие решения</h3>
+<p><button class="diagram-preview doc-image" type="button" data-image="../assets/diagrams/06-recommendation-activity.png" data-title="Обработка рекомендации и принятие решения" aria-label="Увеличить: Обработка рекомендации и принятие решения" style="height:auto;background:white"><img src="../assets/diagrams/06-recommendation-activity.png" alt="Обработка рекомендации и принятие решения" loading="lazy"></button></p>
+<p>Форматы: <a href="../assets/diagrams/06-recommendation-activity.png">PNG</a> · <a href="../assets/diagrams/06-recommendation-activity.svg">SVG</a> · <a href="../assets/diagrams/06-recommendation-activity.puml">PlantUML</a>.</p>
+<p>UML Activity Diagram показывает действия менеджера и системы: рассмотрение рекомендации, подтверждение своего остатка, утверждение или отказ. Если проверка не пройдена, система показывает причину, а менеджер исправляет данные и заново подтверждает остаток. При <code>incomplete</code> распределение и утверждение заблокированы, но рекомендацию можно отклонить. Исходные версии сохраняются в истории; новые данные создают новую рекомендацию.</p>
+</article></div></main><footer class="site-footer"><div class="wrap"><a class="brand" href="../index.html">StockFlow<span class="brand-sub">/ BA · SA</span></a><p>Мой кейс БА/СА. Прототип работает на вымышленных данных.</p><a href="../index.html#prototype">Попробовать сценарий ↗</a></div></footer><dialog class="image-dialog" id="image-dialog" aria-labelledby="image-title"><div class="dialog-head"><div><h2 id="image-title">Диаграмма</h2><div class="diagram-links"><a id="image-original" target="_blank" rel="noopener">Открыть полный размер ↗</a></div></div><button class="dialog-close" type="button" id="image-close" aria-label="Закрыть">×</button></div><div class="image-toolbar" role="group" aria-label="Масштаб диаграммы"><button type="button" id="image-zoom-out" aria-label="Уменьшить">−</button><output id="image-scale" aria-live="polite">100%</output><button type="button" id="image-zoom-in" aria-label="Увеличить">+</button><button type="button" id="image-fit">Вместить</button><button type="button" id="image-actual">100%</button></div><p class="image-help" id="image-help">Увеличьте схему и перемещайте её мышью или прокруткой. Клавиши + / − меняют масштаб.</p><div class="image-viewport" id="image-viewport" tabindex="0" role="region" aria-label="Область просмотра диаграммы" aria-describedby="image-help"><div class="image-canvas" id="image-canvas"><img id="image-full" alt="" draggable="false"></div></div></dialog></body></html>
